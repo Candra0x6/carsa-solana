@@ -1,0 +1,277 @@
+// Carsa Loyalty Program - Prisma Schema
+// Comprehensive database schema for off-chain data storage and analytics
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User Management
+model User {
+  id                    String    @id @default(cuid())
+  email                 String    @unique
+  name                  String?
+  phone                 String?   @unique
+  password_hash         String
+  
+  // Custodial Wallet Information
+  wallet_address        String    @unique
+  wallet_private_key_hash String  // Encrypted private key for custodial wallet
+  
+  // Profile Information
+  profile_image_url     String?
+  date_of_birth         DateTime?
+  city                  String?
+  preferred_language    String?   @default("en")
+  
+  // Account Status
+  is_active             Boolean   @default(true)
+  is_verified           Boolean   @default(false)
+  email_verified_at     DateTime?
+  phone_verified_at     DateTime?
+  
+  // Timestamps
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
+  last_login_at         DateTime?
+  
+  // Relations
+  transactions          Transaction[]
+  user_merchants        UserMerchant[]
+  
+  @@map("users")
+}
+
+// Merchant Management
+model Merchant {
+  id                    String    @id @default(cuid())
+  
+  // Basic Information
+  name                  String
+  description           String?
+  category              MerchantCategory
+  
+  // Contact Information
+  email                 String?   @unique
+  phone                 String?
+  website               String?
+  
+  // Address Information
+  address_line_1        String
+  address_line_2        String?
+  city                  String
+  state                 String?
+  postal_code           String?
+  country               String    @default("Indonesia")
+  latitude              Float?
+  longitude             Float?
+  
+  // Business Information
+  business_registration_number String?
+  tax_id                String?
+  
+  // Blockchain Information
+  wallet_address        String    @unique
+  cashback_rate         Int       // Basis points (e.g., 500 = 5%)
+  tx_signature          String?   // Registration transaction signature
+  slot                  Int?      // Solana slot number
+  block_time            Int?      // Block timestamp
+  confirmed_at          DateTime? // When the tx was confirmed
+  
+  // Media
+  logo_url              String?
+  banner_url            String?
+  qr_code_url           String?   // Generated QR code for payments
+  
+  // Status
+  is_active             Boolean   @default(true)
+  is_verified           Boolean   @default(false)
+  verified_at           DateTime?
+  
+  // Timestamps
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
+  
+  // Relations
+  transactions          Transaction[]
+  user_merchants        UserMerchant[]
+  
+  @@map("merchants")
+}
+
+// Transaction Logging for Analytics and History
+model Transaction {
+  id                    String    @id @default(cuid())
+  
+  // Transaction Identification
+  blockchain_signature  String?   @unique // Solana transaction signature
+  transaction_type      TransactionType
+  
+  // Participants
+  user_id               String
+  merchant_id           String
+  user                  User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  merchant              Merchant  @relation(fields: [merchant_id], references: [id], onDelete: Cascade)
+  
+  // Transaction Details
+  amount                Decimal   @db.Decimal(18, 9) // Token amount with high precision
+  fiat_amount           Decimal?  @db.Decimal(10, 2) // Fiat equivalent for analytics
+  currency              String?   @default("IDR")
+  
+  // Blockchain Information
+  token_mint_address    String?   // CARSA token mint address
+  from_wallet_address   String
+  to_wallet_address     String
+  slot                  Int?      // Solana slot number
+  block_time            Int?      // Block timestamp
+  
+  // Transaction Metadata
+  description           String?
+  reference_id          String?   // External reference (e.g., POS system)
+  
+  // Status Tracking
+  status                TransactionStatus @default(PENDING)
+  blockchain_confirmed_at DateTime?
+  failed_reason         String?
+  
+  // Timestamps
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
+  
+  @@map("transactions")
+  @@index([user_id, created_at])
+  @@index([merchant_id, created_at])
+  @@index([transaction_type, created_at])
+}
+
+// User-Merchant Relationships (favorites, loyalty status, etc.)
+model UserMerchant {
+  id                    String    @id @default(cuid())
+  
+  user_id               String
+  merchant_id           String
+  user                  User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  merchant              Merchant  @relation(fields: [merchant_id], references: [id], onDelete: Cascade)
+  
+  // Relationship Data
+  is_favorite           Boolean   @default(false)
+  visit_count           Int       @default(0)
+  total_spent           Decimal   @default(0) @db.Decimal(18, 9)
+  total_earned          Decimal   @default(0) @db.Decimal(18, 9)
+  
+  // Timestamps
+  first_visit_at        DateTime  @default(now())
+  last_visit_at         DateTime  @default(now())
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
+  
+  @@unique([user_id, merchant_id])
+  @@map("user_merchants")
+}
+
+// QR Code Management
+model QRCode {
+  id                    String    @id @default(cuid())
+  
+  // QR Code Information
+  code                  String    @unique // The actual QR code data
+  qr_type               QRCodeType
+  
+  // Associated Entity
+  entity_id             String    // Can be merchant_id, user_id, etc.
+  entity_type           EntityType
+  
+  // QR Code Metadata
+  image_url             String?   // Generated QR code image URL
+  expires_at            DateTime? // For temporary QR codes
+  is_active             Boolean   @default(true)
+  scan_count            Int       @default(0)
+  
+  // Timestamps
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
+  
+  @@map("qr_codes")
+  @@index([entity_id, entity_type])
+}
+
+// System Configuration
+model SystemConfig {
+  id                    String    @id @default(cuid())
+  key                   String    @unique
+  value                 String
+  description           String?
+  is_public             Boolean   @default(false) // Whether config is publicly accessible
+  
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
+  
+  @@map("system_configs")
+}
+
+// Idempotency tracking for API requests
+model IdempotencyRecord {
+  id            String    @id @default(cuid())
+  key           String    @unique
+  tx_signature  String?
+  db_record_id  String?
+  status        IdempotencyStatus @default(PENDING)
+  created_at    DateTime  @default(now())
+  completed_at  DateTime?
+
+  @@map("idempotency_records")
+  @@index([created_at])
+}
+
+// Enums for Type Safety
+enum MerchantCategory {
+  FOOD_BEVERAGE
+  RETAIL
+  SERVICES
+  ENTERTAINMENT
+  HEALTH_BEAUTY
+  EDUCATION
+  TRANSPORTATION
+  ACCOMMODATION
+  OTHER
+}
+
+enum TransactionType {
+  REWARD_MINT      // User earns tokens for purchase
+  REDEMPTION       // User spends tokens at merchant
+  TRANSFER         // User-to-user transfer
+  CASHBACK         // Automatic cashback distribution
+  MERCHANT_UPDATE  // Merchant settings update
+}
+
+enum IdempotencyStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum TransactionStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+  CANCELLED
+}
+
+enum QRCodeType {
+  MERCHANT_PAYMENT     // For receiving payments
+  USER_WALLET         // For receiving tokens
+  TRANSACTION         // For specific transactions
+  PROMOTIONAL         // For marketing campaigns
+}
+
+enum EntityType {
+  USER
+  MERCHANT
+  TRANSACTION
+  SYSTEM
+}
