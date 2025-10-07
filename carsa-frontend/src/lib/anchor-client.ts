@@ -1,6 +1,8 @@
-import { Connection, PublicKey, Keypair, Transaction, VersionedTransaction } from '@solana/web3.js';
-import { AnchorProvider, Program, BN } from '@coral-xyz/anchor';
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import * as anchor from '@coral-xyz/anchor';
+import { Connection, PublicKey, Keypair, Transaction, VersionedTransaction, SystemProgram } from '@solana/web3.js';
+import { AnchorProvider, Program, BN, Idl } from '@coral-xyz/anchor';
+import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, createAssociatedTokenAccountInstruction } from '@solana/spl-token';
+import { Carsa } from '../../../carsa-contracts/target/types/carsa';
 import { 
   getConnection, 
   getMerchantPDA, 
@@ -10,6 +12,9 @@ import {
   getConfigPDA,
   getMintAuthorityPDA
 } from './solana';
+
+// Import the IDL
+import CarsaIDL from './carsa.json';
 
 export interface AnchorClientConfig {
   wallet?: Keypair;
@@ -51,16 +56,9 @@ export class AnchorClient {
       commitment: 'confirmed'
     });
 
-    // For now, create a minimal IDL - this will be replaced with actual IDL
-    const mockIdl: Idl = {
-      version: "0.1.0",
-      name: "carsa",
-      instructions: [],
-      accounts: [],
-      types: []
-    };
-
-    this.program = new Program(mockIdl, this.provider);
+    // Initialize the program with actual IDL
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    this.program = new Program(CarsaIDL as any, this.provider);
   }
 
   private getServerWallet(): Keypair {
@@ -74,7 +72,7 @@ export class AnchorClient {
     try {
       const privateKeyArray = JSON.parse(privateKeyString);
       return Keypair.fromSecretKey(new Uint8Array(privateKeyArray));
-    } catch (error) {
+    } catch {
       throw new Error('Invalid SERVER_WALLET_PRIVATE_KEY format');
     }
   }
@@ -101,7 +99,9 @@ export class AnchorClient {
   }
 
   /**
-   * Register a new merchant on-chain
+   * Register a new merchant on-chain (server-initiated)
+   * Note: This creates a merchant account where the server acts as the merchant owner
+   * In production, you might want to transfer ownership to the actual merchant later
    */
   async registerMerchant(params: {
     merchantWallet: PublicKey;
@@ -109,15 +109,15 @@ export class AnchorClient {
     category: string;
     cashbackRate: number;
   }): Promise<string> {
+    // Use server wallet as the merchant owner for server-initiated registration
     const [merchantPDA] = getMerchantPDA(params.merchantWallet);
-    
+
     const tx = await this.program.methods
       .registerMerchant(params.name, params.category, params.cashbackRate)
       .accounts({
-        merchant: merchantPDA,
-        merchantWallet: params.merchantWallet,
-        payer: this.provider.wallet.publicKey,
-        systemProgram: PublicKey.default,
+        merchantOwner: params.merchantWallet,
+        merchantAccount: merchantPDA,
+        systemProgram: SystemProgram.programId,
       })
       .rpc();
 
@@ -136,12 +136,12 @@ export class AnchorClient {
     
     const tx = await this.program.methods
       .updateMerchant(
-        params.newCashbackRate ? params.newCashbackRate : null,
+        params.newCashbackRate !== undefined ? params.newCashbackRate : null,
         params.isActive !== undefined ? params.isActive : null
       )
       .accounts({
-        merchant: merchantPDA,
-        merchantWallet: params.merchantWallet,
+        merchantOwner: params.merchantWallet,
+        merchantAccount: merchantPDA,
       })
       .rpc();
 
@@ -158,28 +158,47 @@ export class AnchorClient {
     transactionId: Uint8Array;
   }): Promise<string> {
     const [merchantPDA] = getMerchantPDA(params.merchantWallet);
-    const [transactionPDA] = getTransactionPDA(params.customerWallet, params.transactionId);
+    const [transactionPDA] = getTransactionPDA(params.transactionId);
     const [mintAuthorityPDA] = getMintAuthorityPDA();
+    const [configPDA] = getConfigPDA();
     
     // Get token accounts
     const customerTokenAccount = await getAssociatedTokenAddress(
-      new PublicKey(process.env.NEXT_PUBLIC_LOKAL_TOKEN_MINT!),
+      new PublicKey(process.env.NEXT_PUBLIC_LOKAL_MINT_ADDRESS!),
       params.customerWallet
     );
+
+    // Check if customer token account exists, create if necessary
+    const customerTokenAccountInfo = await this.connection.getAccountInfo(customerTokenAccount);
+    const preInstructions = [];
+    
+    if (!customerTokenAccountInfo) {
+      preInstructions.push(
+        createAssociatedTokenAccountInstruction(
+          this.provider.wallet.publicKey, // payer
+          customerTokenAccount,
+          params.customerWallet, // owner
+          new PublicKey(process.env.NEXT_PUBLIC_LOKAL_MINT_ADDRESS!)
+        )
+      );
+    }
 
     const tx = await this.program.methods
       .processPurchase(params.purchaseAmount, Array.from(params.transactionId))
       .accounts({
+        serverWallet: this.provider.wallet.publicKey,
         customer: params.customerWallet,
-        merchant: merchantPDA,
-        merchantWallet: params.merchantWallet,
-        transaction: transactionPDA,
+        merchantOwner: params.merchantWallet,
+        merchantAccount: merchantPDA,
+        transactionAccount: transactionPDA,
         customerTokenAccount,
-        tokenMint: new PublicKey(process.env.NEXT_PUBLIC_LOKAL_TOKEN_MINT!),
+        mint: new PublicKey(process.env.NEXT_PUBLIC_LOKAL_MINT_ADDRESS!),
         mintAuthority: mintAuthorityPDA,
+        config: configPDA,
         tokenProgram: TOKEN_PROGRAM_ID,
-        systemProgram: PublicKey.default,
+        systemProgram: SystemProgram.programId,
       })
+      .preInstructions(preInstructions)
       .rpc();
 
     return tx;
@@ -282,7 +301,7 @@ export class AnchorClient {
     confirmed: boolean;
     slot?: number;
     blockTime?: number | null;
-    err?: any;
+    err?: unknown;
   }> {
     try {
       const status = await this.connection.getSignatureStatus(signature, {
@@ -339,9 +358,11 @@ export class AnchorClient {
   /**
    * Get program account data
    */
-  async getAccountData<T = any>(address: PublicKey, accountType: string): Promise<T | null> {
+  async getAccountData<T = unknown>(address: PublicKey, accountType: string): Promise<T | null> {
     try {
-      const account = await this.program.account[accountType].fetch(address);
+      // Type assertion needed for dynamic account access with generic IDL
+      const accountNamespace = this.program.account as Record<string, { fetch: (address: PublicKey) => Promise<unknown> }>;
+      const account = await accountNamespace[accountType].fetch(address);
       return account as T;
     } catch (error) {
       console.error(`Error fetching ${accountType} account:`, error);

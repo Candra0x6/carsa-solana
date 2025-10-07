@@ -1,30 +1,48 @@
-import { Keypair, PublicKey, Transaction, SystemProgram } from '@solana/web3.js';
-import { createClient } from '@supabase/supabase-js';
-import bcrypt from 'bcryptjs';
-import bs58 from 'bs58';
+import { Keypair, Transaction, Connection, PublicKey, SystemProgram } from '@solana/web3.js';
+import { getDatabaseService } from './database-service';
 import { getConnection } from './solana';
+import crypto from 'crypto';
+import bs58 from 'bs58';
+import bcrypt from 'bcryptjs';
+import { createClient } from '@supabase/supabase-js';
 
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Type definitions
+export interface UserWallet {
+  userId: string;
+  walletAddress: string;
+  encryptedPrivateKey?: string;
+}
 
-/**
- * Custodial wallet interface
- */
-interface CustodialWallet {
+// Initialize Supabase client (add your actual URL and key in env vars)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+export interface CustodialWallet {
   publicKey: string;
   privateKey: string;
 }
 
-/**
- * User wallet information from database
- */
-interface UserWallet {
-  userId: string;
-  walletAddress: string;
-  encryptedPrivateKey: string;
+export interface CustodialWalletService {
+  /**
+   * Get the custodial wallet keypair for a user
+   */
+  getWalletKeypair(userId: string): Promise<Keypair>;
+  
+  /**
+   * Sign a transaction with the user's custodial wallet
+   */
+  signTransaction(userId: string, transaction: Transaction): Promise<Transaction>;
+  
+  /**
+   * Get the public key for a user's custodial wallet
+   */
+  getPublicKey(userId: string): Promise<PublicKey>;
+  
+  /**
+   * Check if user has a custodial wallet
+   */
+  hasCustodialWallet(userId: string): Promise<boolean>;
 }
 
 /**

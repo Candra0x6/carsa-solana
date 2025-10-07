@@ -1,5 +1,6 @@
-import { PrismaClient, TransactionStatus, TransactionType, MerchantCategory } from '../generated/prisma';
+import { PrismaClient, TransactionStatus, TransactionType, MerchantCategory, IdempotencyStatus } from '../generated/prisma';
 import { getServerWallet } from './server-wallet';
+import { getQRService } from './qr-service';
 
 export interface OnChainMetadata {
   txSignature: string;
@@ -9,12 +10,13 @@ export interface OnChainMetadata {
 }
 
 export interface IdempotencyRecord {
+  id: string;
   key: string;
-  txSignature?: string;
-  dbRecordId?: string;
-  status: 'pending' | 'completed' | 'failed';
+  txSignature: string | null;
+  dbRecordId: string | null;
+  status: IdempotencyStatus;
   createdAt: Date;
-  completedAt?: Date;
+  completedAt: Date | null;
 }
 
 /**
@@ -31,11 +33,19 @@ export class DatabaseService {
    * Store idempotency key to prevent duplicate operations
    */
   async storeIdempotencyKey(key: string): Promise<void> {
-    await this.prisma.$executeRaw`
-      INSERT INTO idempotency_records (key, status, created_at)
-      VALUES (${key}, 'pending', NOW())
-      ON CONFLICT (key) DO NOTHING
-    `;
+    try {
+      await this.prisma.idempotencyRecord.create({
+        data: {
+          key: key,
+          status: IdempotencyStatus.PENDING
+        }
+      });
+    } catch (error) {
+      // Ignore unique constraint errors (key already exists)
+      if (error instanceof Error && 'code' in error && error.code !== 'P2002') {
+        throw error;
+      }
+    }
   }
 
   /**
@@ -46,24 +56,37 @@ export class DatabaseService {
     txSignature: string,
     dbRecordId: string
   ): Promise<void> {
-    await this.prisma.$executeRaw`
-      UPDATE idempotency_records
-      SET tx_signature = ${txSignature},
-          db_record_id = ${dbRecordId},
-          status = 'completed',
-          completed_at = NOW()
-      WHERE key = ${key}
-    `;
+    const status = txSignature ? IdempotencyStatus.COMPLETED : IdempotencyStatus.FAILED;
+    await this.prisma.idempotencyRecord.update({
+      where: { key },
+      data: {
+        status,
+        tx_signature: txSignature || null,
+        db_record_id: dbRecordId || null,
+        completed_at: new Date()
+      }
+    });
   }
 
   /**
    * Check if idempotency key exists and return its status
    */
   async checkIdempotencyKey(key: string): Promise<IdempotencyRecord | null> {
-    const result = await this.prisma.$queryRaw<IdempotencyRecord[]>`
-      SELECT * FROM idempotency_records WHERE key = ${key} LIMIT 1
-    `;
-    return result[0] || null;
+    const result = await this.prisma.idempotencyRecord.findUnique({
+      where: { key }
+    });
+    
+    if (!result) return null;
+    
+    return {
+      id: result.id,
+      key: result.key,
+      status: result.status,
+      txSignature: result.tx_signature,
+      dbRecordId: result.db_record_id,
+      createdAt: result.created_at,
+      completedAt: result.completed_at
+    };
   }
 
   /**
@@ -86,31 +109,31 @@ export class DatabaseService {
   }
 
   /**
-   * Register merchant with on-chain verification
+   * Register merchant with on-chain verification and QR code generation
    */
   async registerMerchant(params: {
     txSignature: string;
     walletAddress: string;
     name: string;
-    category: string;
+    category: MerchantCategory;
     cashbackRate: number;
     email?: string;
     phone?: string;
     addressLine1: string;
     city: string;
     idempotencyKey?: string;
-  }): Promise<{ id: string; txSignature: string }> {
+  }): Promise<{ id: string; txSignature: string; qrCodeUrl?: string }> {
     // Verify on-chain confirmation first
     const onChainData = await this.verifyOnChainConfirmation(params.txSignature);
     if (!onChainData) {
       throw new Error('Transaction not confirmed on-chain');
     }
 
-    // Create merchant record with on-chain metadata
+    // Create merchant record with on-chain metadata (without QR code initially)
     const merchant = await this.prisma.merchant.create({
       data: {
         name: params.name,
-        category: params.category as MerchantCategory,
+        category: params.category,
         email: params.email,
         phone: params.phone,
         address_line_1: params.addressLine1,
@@ -124,6 +147,38 @@ export class DatabaseService {
       }
     });
 
+    let qrCodeUrl: string | undefined;
+
+    try {
+      // Generate QR code after successful merchant creation
+      const qrService = getQRService();
+      
+      // Ensure storage bucket exists
+      await qrService.ensureBucketExists();
+      
+      const qrResult = await qrService.generateMerchantQR({
+        merchantId: merchant.id,
+        walletAddress: params.walletAddress,
+        name: params.name,
+        cashbackRate: params.cashbackRate
+      });
+
+      if (qrResult.success && qrResult.qrCodeUrl) {
+        qrCodeUrl = qrResult.qrCodeUrl;
+        
+        // Update merchant record with QR code URL
+        await this.prisma.merchant.update({
+          where: { id: merchant.id },
+          data: { qr_code_url: qrCodeUrl }
+        });
+      } else {
+        console.warn(`Failed to generate QR code for merchant ${merchant.id}: ${qrResult.error}`);
+      }
+    } catch (error) {
+      console.error(`Error generating QR code for merchant ${merchant.id}:`, error);
+      // Don't fail the registration if QR generation fails
+    }
+
     // Update idempotency record if provided
     if (params.idempotencyKey) {
       await this.completeIdempotencyKey(
@@ -135,7 +190,8 @@ export class DatabaseService {
 
     return {
       id: merchant.id,
-      txSignature: params.txSignature
+      txSignature: params.txSignature,
+      qrCodeUrl
     };
   }
 
@@ -412,6 +468,48 @@ export class DatabaseService {
   }
 
   /**
+   * Get merchant by wallet address
+   */
+  async getMerchantByWallet(walletAddress: string) {
+    return this.prisma.merchant.findUnique({
+      where: { wallet_address: walletAddress }
+    });
+  }
+
+  /**
+   * Get all merchants with pagination
+   */
+  async getAllMerchants(options: {
+    page?: number;
+    limit?: number;
+  } = {}) {
+    const page = options.page || 1;
+    const limit = options.limit || 10;
+    const skip = (page - 1) * limit;
+
+    const [merchants, total] = await Promise.all([
+      this.prisma.merchant.findMany({
+        skip,
+        take: limit,
+        orderBy: { created_at: 'desc' },
+        select: {
+          id: true,
+          name: true,
+          category: true,
+          cashback_rate: true,
+          wallet_address: true,
+          is_active: true,
+          created_at: true,
+          qr_code_url: true,
+        }
+      }),
+      this.prisma.merchant.count()
+    ]);
+
+    return { merchants, total };
+  }
+
+  /**
    * Get user by wallet address
    */
   async getUserByWallet(walletAddress: string) {
@@ -427,15 +525,40 @@ export class DatabaseService {
     email: string;
     walletAddress: string;
     name?: string;
+    passwordHash?: string;
+    encryptedPrivateKey?: string;
   }) {
     return this.prisma.user.create({
       data: {
         email: userData.email,
         wallet_address: userData.walletAddress,
-        wallet_private_key_hash: '', // Would be properly encrypted in production
-        password_hash: '', // Not needed for custodial wallets
+        wallet_private_key_hash: userData.encryptedPrivateKey || '',
+        password_hash: userData.passwordHash || '',
         name: userData.name || `User ${userData.walletAddress.slice(0, 8)}...`
       }
+    });
+  }
+
+  /**
+   * Find user by email
+   */
+  async getUserByEmail(email: string) {
+    return this.prisma.user.findUnique({
+      where: { email }
+    });
+  }
+
+  /**
+   * Update user data
+   */
+  async updateUser(userId: string, updateData: {
+    name?: string;
+    email?: string;
+    password_hash?: string;
+  }) {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: updateData
     });
   }
 
@@ -488,11 +611,16 @@ export class DatabaseService {
     const cutoffTime = new Date();
     cutoffTime.setHours(cutoffTime.getHours() - olderThanHours);
 
-    await this.prisma.$executeRaw`
-      DELETE FROM idempotency_records
-      WHERE created_at < ${cutoffTime}
-      AND (status = 'completed' OR status = 'failed')
-    `;
+    await this.prisma.idempotencyRecord.deleteMany({
+      where: {
+        created_at: {
+          lt: cutoffTime
+        },
+        status: {
+          in: [IdempotencyStatus.COMPLETED, IdempotencyStatus.FAILED]
+        }
+      }
+    });
   }
 }
 

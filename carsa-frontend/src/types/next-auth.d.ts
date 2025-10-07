@@ -8,6 +8,7 @@ declare module 'next-auth' {
       email: string;
       name?: string;
       walletAddress: string;
+      isCustodial: boolean;
       isNewUser?: boolean;
     } & DefaultSession['user'];
   }
@@ -17,6 +18,7 @@ declare module 'next-auth' {
     email: string;
     name?: string;
     walletAddress: string;
+    isCustodial: boolean;
     isNewUser?: boolean;
   }
 }
@@ -24,6 +26,7 @@ declare module 'next-auth' {
 declare module 'next-auth/jwt' {
   interface JWT extends DefaultJWT {
     walletAddress?: string;
+    isCustodial?: boolean;
     isNewUser?: boolean;
   }
 }

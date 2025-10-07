@@ -3,6 +3,7 @@
 import { WalletConnection } from '@/components/WalletConnection';
 import { TokenBalanceDisplay } from '@/components/TokenBalanceDisplay';
 import TransactionDemo from '@/components/TransactionDemo';
+import PurchaseProcessor from '@/components/PurchaseProcessor';
 
 export default function Home() {
   // Example token mint - replace with your actual token mint address
@@ -88,6 +89,7 @@ export default function Home() {
           </div>
         </div>
       </div>
+     
     </div>
   );
 }

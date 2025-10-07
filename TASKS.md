@@ -26,7 +26,7 @@ A mobile-first loyalty & rewards app powered by blockchain where users earn **Lo
 
 ### Phase 2: Backend API Development
 - [x] Set up Next.js project with API routes
-- [x] Integrate NextAuth with Custodial Wallet for authentication
+- [ ] Integrate NextAuth with Custodial Wallet for authentication
 - [ ] Set up Supabase database with Prisma ORM schema
 - [ ] Create user registration and management APIs
 - [ ] Create merchant registration and management APIs
@@ -36,6 +36,7 @@ A mobile-first loyalty & rewards app powered by blockchain where users earn **Lo
 
 ### Phase 3: Frontend Development
 - [ ] Create responsive mobile-first UI components
+
 - [ ] Implement user authentication flow
 - [ ] Build user dashboard with wallet balance display
 - [ ] Create QR code scanner for transactions

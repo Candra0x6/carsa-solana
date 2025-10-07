@@ -3,7 +3,8 @@ import { getDatabaseService } from '@/lib/database-service';
 import { getServerWallet } from '@/lib/server-wallet';
 import { getMerchantPDA } from '@/lib/solana';
 import { PublicKey } from '@solana/web3.js';
-import crypto from 'crypto';
+import { IdempotencyStatus, MerchantCategory } from '@/generated/prisma';
+import * as crypto from 'crypto';
 
 export interface RegisterMerchantRequest {
   name: string;
@@ -14,6 +15,7 @@ export interface RegisterMerchantRequest {
   addressLine1: string;
   city: string;
   walletAddress: string;
+  txSignature?: string; // For client-initiated registration
   idempotencyKey?: string;
 }
 
@@ -23,8 +25,50 @@ export interface RegisterMerchantResponse {
     id: string;
     txSignature: string;
     merchantPDA: string;
+    qrCodeUrl?: string;
   };
   error?: string;
+}
+
+/**
+ * Map category string to MerchantCategory enum
+ */
+function mapCategoryToEnum(category: string): MerchantCategory {
+  const categoryMap: Record<string, MerchantCategory> = {
+    'Food & Beverage': MerchantCategory.FOOD_BEVERAGE,
+    'Restaurant': MerchantCategory.FOOD_BEVERAGE,
+    'Coffee Shop': MerchantCategory.FOOD_BEVERAGE,
+    'Retail': MerchantCategory.RETAIL,
+    'Store': MerchantCategory.RETAIL,
+    'Shop': MerchantCategory.RETAIL,
+    'Services': MerchantCategory.SERVICES,
+    'Entertainment': MerchantCategory.ENTERTAINMENT,
+    'Health & Beauty': MerchantCategory.HEALTH_BEAUTY,
+    'Salon': MerchantCategory.HEALTH_BEAUTY,
+    'Spa': MerchantCategory.HEALTH_BEAUTY,
+    'Education': MerchantCategory.EDUCATION,
+    'Transportation': MerchantCategory.TRANSPORTATION,
+    'Accommodation': MerchantCategory.ACCOMMODATION,
+    'Hotel': MerchantCategory.ACCOMMODATION,
+    'Other': MerchantCategory.OTHER
+  };
+
+  // Try exact match first
+  if (categoryMap[category]) {
+    return categoryMap[category];
+  }
+
+  // Try case-insensitive match
+  const normalizedCategory = Object.keys(categoryMap).find(
+    key => key.toLowerCase() === category.toLowerCase()
+  );
+  
+  if (normalizedCategory) {
+    return categoryMap[normalizedCategory];
+  }
+
+  // Default to OTHER if no match found
+  return MerchantCategory.OTHER;
 }
 
 /**
@@ -62,16 +106,24 @@ export async function POST(request: NextRequest): Promise<NextResponse<RegisterM
     // Check idempotency
     const existingRecord = await dbService.checkIdempotencyKey(idempotencyKey);
     if (existingRecord) {
-      if (existingRecord.status === 'completed') {
+      if (existingRecord.status === IdempotencyStatus.COMPLETED) {
+        // Get merchant record to include QR code URL
+        const existingMerchant = existingRecord.dbRecordId ? 
+          await dbService.getMerchant(existingRecord.dbRecordId) : null;
+        
+        // Use the merchant wallet for PDA calculation (client-initiated)
+        const [merchantPDA] = getMerchantPDA(merchantWallet.toString());
+        
         return NextResponse.json({
           success: true,
           data: {
             id: existingRecord.dbRecordId!,
             txSignature: existingRecord.txSignature!,
-            merchantPDA: getMerchantPDA(merchantWallet)[0].toString()
+            merchantPDA: merchantPDA.toString(),
+            qrCodeUrl: existingMerchant?.qr_code_url || undefined
           }
         });
-      } else if (existingRecord.status === 'pending') {
+      } else if (existingRecord.status === IdempotencyStatus.PENDING) {
         return NextResponse.json({
           success: false,
           error: 'Request already in progress'
@@ -83,25 +135,21 @@ export async function POST(request: NextRequest): Promise<NextResponse<RegisterM
     await dbService.storeIdempotencyKey(idempotencyKey);
 
     try {
-      // TODO: Replace with actual Anchor program call
-      // For now, we'll simulate the transaction
-      const mockTxSignature = `mock_tx_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
-      // In a real implementation:
-      // const anchorClient = getAnchorClient();
-      // const txSignature = await anchorClient.registerMerchant({
-      //   merchantWallet,
-      //   name: body.name,
-      //   category: body.category,
-      //   cashbackRate: body.cashbackRate
-      // });
+      // For client-initiated flow, we expect the transaction signature to be provided
+      // The frontend should handle the Anchor transaction and send us the signature
+      if (!body.txSignature) {
+        return NextResponse.json({
+          success: false,
+          error: 'Transaction signature required for client-initiated registration'
+        }, { status: 400 });
+      }
 
       // Wait for confirmation and store in database
       const result = await dbService.registerMerchant({
-        txSignature: mockTxSignature,
+        txSignature: body.txSignature,
         walletAddress: body.walletAddress,
         name: body.name,
-        category: body.category,
+        category: mapCategoryToEnum(body.category),
         cashbackRate: body.cashbackRate,
         email: body.email,
         phone: body.phone,
@@ -110,14 +158,16 @@ export async function POST(request: NextRequest): Promise<NextResponse<RegisterM
         idempotencyKey
       });
 
-      const [merchantPDA] = getMerchantPDA(merchantWallet);
+      // Use the actual merchant wallet for PDA calculation
+      const [merchantPDA] = getMerchantPDA(merchantWallet.toString());
 
       return NextResponse.json({
         success: true,
         data: {
           id: result.id,
-          txSignature: result.txSignature,
-          merchantPDA: merchantPDA.toString()
+          txSignature: body.txSignature,
+          merchantPDA: merchantPDA.toString(),
+          qrCodeUrl: result.qrCodeUrl
         }
       });
 

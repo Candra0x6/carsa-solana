@@ -6,13 +6,16 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-carsa = "4rxv5KW47SDCVEQcgc2dDQxcWDyZ965SCTnA7sqF7gqT"
+carsa = "FicaEwstRkE9pwHZPWS34XAjnbH6vc8aZ2Ly4EiksmxY"
+
+[programs.devnet]
+carsa = "FicaEwstRkE9pwHZPWS34XAjnbH6vc8aZ2Ly4EiksmxY"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "localnet"
+cluster = "devnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]

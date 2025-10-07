@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabaseService } from '@/lib/database-service';
 import { PublicKey } from '@solana/web3.js';
-import crypto from 'crypto';
+import { IdempotencyStatus } from '@/generated/prisma';
+import * as crypto from 'crypto';
 
 export interface ProcessPurchaseRequest {
   customerWallet: string;
   merchantId: string;
   purchaseAmount: number; // In fiat (e.g., IDR)
+  txSignature: string; // Required for client-initiated flow
   idempotencyKey?: string;
 }
 
@@ -22,14 +24,20 @@ export interface ProcessPurchaseResponse {
 
 /**
  * POST /api/anchor/process-purchase
- * Server-initiated purchase processing and reward distribution
+ * 
+ * Client-initiated purchase processing flow:
+ * 1. Frontend handles the Anchor transaction with connected wallet
+ * 2. Frontend sends transaction signature to this endpoint
+ * 3. Server records the transaction in database and calculates rewards
+ * 
+ * This matches the pattern used in register-merchant route
  */
 export async function POST(request: NextRequest): Promise<NextResponse<ProcessPurchaseResponse>> {
   try {
     const body: ProcessPurchaseRequest = await request.json();
     
     // Validate required fields
-    if (!body.customerWallet || !body.merchantId || !body.purchaseAmount) {
+    if (!body.customerWallet || !body.merchantId || !body.purchaseAmount || !body.txSignature) {
       return NextResponse.json({
         success: false,
         error: 'Missing required fields'
@@ -51,20 +59,20 @@ export async function POST(request: NextRequest): Promise<NextResponse<ProcessPu
     // Generate idempotency key if not provided
     const idempotencyKey = body.idempotencyKey || crypto.randomUUID();
     
+  
     // Check idempotency
     const existingRecord = await dbService.checkIdempotencyKey(idempotencyKey);
     if (existingRecord) {
-      if (existingRecord.status === 'completed') {
-        // Parse the existing transaction data
+      if (existingRecord.status === IdempotencyStatus.COMPLETED) {
         return NextResponse.json({
           success: true,
           data: {
             transactionId: existingRecord.dbRecordId!,
             txSignature: existingRecord.txSignature!,
-            tokensAwarded: 0 // Would need to be stored in idempotency record
+            tokensAwarded: 0 // Could be calculated from merchant's cashback rate if needed
           }
         });
-      } else if (existingRecord.status === 'pending') {
+      } else if (existingRecord.status === IdempotencyStatus.PENDING) {
         return NextResponse.json({
           success: false,
           error: 'Request already in progress'
@@ -76,6 +84,15 @@ export async function POST(request: NextRequest): Promise<NextResponse<ProcessPu
     await dbService.storeIdempotencyKey(idempotencyKey);
 
     try {
+      // For client-initiated flow, we expect the transaction signature to be provided
+      // The frontend should handle the Anchor transaction and send us the signature
+      if (!body.txSignature) {
+        return NextResponse.json({
+          success: false,
+          error: 'Transaction signature required for client-initiated processing'
+        }, { status: 400 });
+      }
+
       // Get merchant data to calculate rewards
       const merchant = await dbService.getMerchant(body.merchantId);
 
@@ -91,18 +108,6 @@ export async function POST(request: NextRequest): Promise<NextResponse<ProcessPu
       const cashbackRate = merchant.cashback_rate / 10000; // Convert basis points to decimal
       const tokensAwarded = Math.floor(body.purchaseAmount * cashbackRate);
 
-      // TODO: Replace with actual Anchor program call
-      const mockTxSignature = `mock_purchase_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
-      // In real implementation:
-      // const anchorClient = getAnchorClient();
-      // const txSignature = await anchorClient.processPurchase({
-      //   customerWallet: new PublicKey(body.customerWallet),
-      //   merchantWallet: new PublicKey(merchant.wallet_address),
-      //   purchaseAmount: new BN(body.purchaseAmount),
-      //   transactionId: crypto.randomBytes(32)
-      // });
-
       // Find or create user record
       let user = await dbService.getUserByWallet(body.customerWallet);
 
@@ -117,7 +122,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ProcessPu
 
       // Record the purchase transaction
       const result = await dbService.recordPurchaseTransaction({
-        txSignature: mockTxSignature,
+        txSignature: body.txSignature,
         userId: user.id,
         merchantId: body.merchantId,
         purchaseAmount: body.purchaseAmount,
@@ -127,11 +132,14 @@ export async function POST(request: NextRequest): Promise<NextResponse<ProcessPu
         idempotencyKey
       });
 
+      // Update idempotency record as completed
+      await dbService.completeIdempotencyKey(idempotencyKey, body.txSignature, result.id);
+
       return NextResponse.json({
         success: true,
         data: {
           transactionId: result.id,
-          txSignature: result.txSignature,
+          txSignature: body.txSignature,
           tokensAwarded
         }
       });

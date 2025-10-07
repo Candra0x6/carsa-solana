@@ -10,7 +10,7 @@ use error::*;
 use instructions::*;
 use state::*;
 
-declare_id!("4rxv5KW47SDCVEQcgc2dDQxcWDyZ965SCTnA7sqF7gqT");
+declare_id!("FicaEwstRkE9pwHZPWS34XAjnbH6vc8aZ2Ly4EiksmxY");
 
 /// Main program module for the Carsa loyalty program
 /// Manages Lokal token minting, distribution, and redemption

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabaseService } from '@/lib/database-service';
-import crypto from 'crypto';
+import { IdempotencyStatus } from '@/generated/prisma';
+import * as crypto from 'crypto';
 
 export interface UpdateMerchantRequest {
   merchantId: string;
@@ -42,7 +43,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<UpdateMer
     // Check idempotency
     const existingRecord = await dbService.checkIdempotencyKey(idempotencyKey);
     if (existingRecord) {
-      if (existingRecord.status === 'completed') {
+      if (existingRecord.status === IdempotencyStatus.COMPLETED) {
         return NextResponse.json({
           success: true,
           data: {
@@ -50,7 +51,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<UpdateMer
             txSignature: existingRecord.txSignature!
           }
         });
-      } else if (existingRecord.status === 'pending') {
+      } else if (existingRecord.status === IdempotencyStatus.PENDING) {
         return NextResponse.json({
           success: false,
           error: 'Request already in progress'
@@ -62,12 +63,29 @@ export async function POST(request: NextRequest): Promise<NextResponse<UpdateMer
     await dbService.storeIdempotencyKey(idempotencyKey);
 
     try {
-      // TODO: Replace with actual Anchor program call
-      const mockTxSignature = `mock_update_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      // Get merchant data to get wallet address
+      const merchant = await dbService.getMerchant(body.merchantId);
+      if (!merchant) {
+        return NextResponse.json({
+          success: false,
+          error: 'Merchant not found'
+        }, { status: 404 });
+      }
+
+      // Import and use actual Anchor client
+      const { AnchorClient } = await import('@/lib/anchor-client');
+      const { PublicKey } = await import('@solana/web3.js');
+      const anchorClient = new AnchorClient();
+      
+      const txSignature = await anchorClient.updateMerchant({
+        merchantWallet: new PublicKey(merchant.wallet_address),
+        newCashbackRate: body.newCashbackRate,
+        isActive: body.isActive
+      });
       
       // Wait for confirmation and store in database
       const result = await dbService.updateMerchant({
-        txSignature: mockTxSignature,
+        txSignature: txSignature,
         merchantId: body.merchantId,
         newCashbackRate: body.newCashbackRate,
         isActive: body.isActive,

@@ -1,6 +1,6 @@
 import { Connection, PublicKey, Keypair } from '@solana/web3.js';
 import { getConnection } from './solana';
-import crypto from 'crypto';
+import * as crypto from 'crypto';
 
 export interface ServerWalletConfig {
   privateKey?: Uint8Array;
