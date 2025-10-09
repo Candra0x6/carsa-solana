@@ -57,7 +57,7 @@ pub struct MerchantAccount {
     /// Total amount of tokens distributed as rewards for this merchant
     pub total_rewards_distributed: u64,
     
-    /// Total purchase volume (in SOL lamports) processed
+    /// Total purchase volume (in Indonesian Rupiah IDR) processed
     pub total_volume: u64,
     
     /// Timestamp when merchant was registered
@@ -79,7 +79,7 @@ impl MerchantAccount {
 }
 
 /// Purchase transaction record for tracking and analytics
-/// This account stores details of each purchase transaction
+/// This account stores details of each purchase transaction including token redemptions
 #[account]
 pub struct PurchaseTransaction {
     /// The customer's wallet public key
@@ -88,14 +88,23 @@ pub struct PurchaseTransaction {
     /// The merchant's account public key
     pub merchant: Pubkey,
     
-    /// Purchase amount in SOL lamports
-    pub purchase_amount: u64,
+    /// Fiat purchase amount in Indonesian Rupiah (IDR)
+    pub fiat_amount: u64,
+    
+    /// Amount of tokens redeemed as payment (0 if none)
+    pub redeemed_token_amount: u64,
+    
+    /// Total transaction value (fiat + token value in IDR)
+    pub total_value: u64,
     
     /// Reward tokens minted for this purchase
     pub reward_amount: u64,
     
     /// Cashback rate applied (in basis points)
     pub cashback_rate: u16,
+    
+    /// Whether tokens were used in this transaction
+    pub used_tokens: bool,
     
     /// Timestamp of the transaction
     pub timestamp: i64,
@@ -112,9 +121,10 @@ pub struct PurchaseTransaction {
 
 impl PurchaseTransaction {
     /// Calculate the space needed for this account
-    /// 8 (discriminator) + 32 (customer) + 32 (merchant) + 8 (purchase_amount) + 8 (reward_amount)
-    /// + 2 (cashback_rate) + 8 (timestamp) + 32 (transaction_id) + 1 (bump) + 16 (reserved) = 147 bytes
-    pub const LEN: usize = 8 + 32 + 32 + 8 + 8 + 2 + 8 + 32 + 1 + 16;
+    /// 8 (discriminator) + 32 (customer) + 32 (merchant) + 8 (fiat_amount) + 8 (redeemed_token_amount)
+    /// + 8 (total_value) + 8 (reward_amount) + 2 (cashback_rate) + 1 (used_tokens) + 8 (timestamp) 
+    /// + 32 (transaction_id) + 1 (bump) + 16 (reserved) = 164 bytes
+    pub const LEN: usize = 8 + 32 + 32 + 8 + 8 + 8 + 8 + 2 + 1 + 8 + 32 + 1 + 16;
 }
 
 /// Token transfer record for tracking P2P transfers
@@ -166,7 +176,7 @@ pub struct TokenRedemption {
     /// Amount of tokens redeemed
     pub token_amount: u64,
     
-    /// Fiat value of the redemption (in lamports for calculation)
+    /// Fiat value of the redemption (in Indonesian Rupiah IDR)
     pub fiat_value: u64,
     
     /// Discount percentage applied (in basis points)

@@ -3,12 +3,8 @@
 import { WalletConnection } from '@/components/WalletConnection';
 import { TokenBalanceDisplay } from '@/components/TokenBalanceDisplay';
 import TransactionDemo from '@/components/TransactionDemo';
-import PurchaseProcessor from '@/components/PurchaseProcessor';
 
 export default function Home() {
-  // Example token mint - replace with your actual token mint address
-  const CARSA_TOKEN_MINT = process.env.NEXT_PUBLIC_CARSA_TOKEN_MINT || "11111111111111111111111111111112";
-  
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
       <div className="container mx-auto px-4 py-8">
@@ -25,25 +21,36 @@ export default function Home() {
 
         {/* Main Content */}
         <div className="max-w-4xl mx-auto">
+          
+          {/* Instructions */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
+            <h2 className="text-xl font-semibold text-blue-900 mb-3">How to Use</h2>
+            <ol className="list-decimal list-inside space-y-2 text-blue-800">
+              <li>Connect your wallet using the &quot;Connect Wallet&quot; button in the navbar above</li>
+              <li>Once connected, click the &quot;💰 LOKAL Balance&quot; button to view your token balance</li>
+              <li>Use the features below to interact with the loyalty program</li>
+            </ol>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             
-            {/* Wallet Connection Section */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-                Connect Wallet
-              </h2>
-              <WalletConnection />
-            </div>
-
             {/* Token Balance Section */}
             <div className="bg-white rounded-xl shadow-lg p-6">
               <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-                CARSA Tokens
+                LOKAL Token Balance
               </h2>
               <TokenBalanceDisplay 
-                mintAddress={CARSA_TOKEN_MINT}
-                tokenName="CARSA"
+                mintAddress={process.env.NEXT_PUBLIC_LOKAL_MINT_ADDRESS || "11111111111111111111111111111112"}
+                tokenName="LOKAL"
               />
+            </div>
+
+            {/* Wallet Connection Status */}
+            <div className="bg-white rounded-xl shadow-lg p-6">
+              <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+                Wallet Connection
+              </h2>
+              <WalletConnection />
             </div>
           </div>
 

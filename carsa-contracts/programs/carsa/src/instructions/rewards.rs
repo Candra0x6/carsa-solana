@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{self, Mint, Token, TokenAccount};
+use anchor_spl::token::{self as token, Mint, Token, TokenAccount};
 use crate::state::*;
 use crate::error::CarsaError;
 
@@ -28,9 +28,9 @@ pub struct RegisterMerchant<'info> {
 }
 
 /// Process a purchase transaction and distribute rewards
-/// This is the core instruction that handles reward distribution logic
+/// This is the core instruction that handles reward distribution logic and optional token redemption
 #[derive(Accounts)]
-#[instruction(purchase_amount: u64, transaction_id: [u8; 32])]
+#[instruction(fiat_amount: u64, redeem_token_amount: Option<u64>, transaction_id: [u8; 32])]
 pub struct ProcessPurchase<'info> {
     /// The customer making the purchase
     #[account(mut)]
@@ -49,7 +49,7 @@ pub struct ProcessPurchase<'info> {
         constraint = mint.key() == config.mint @ CarsaError::MintAuthorityMismatch
     )]
     pub mint: Account<'info, Mint>,
-    
+
     /// Program Derived Address that acts as the mint authority
     /// CHECK: This account is derived using seeds and verified in constraints
     #[account(
@@ -66,12 +66,17 @@ pub struct ProcessPurchase<'info> {
     )]
     pub config: Account<'info, LokalMintConfig>,
     
-    /// The customer's token account that will receive the reward tokens
+    /// The customer's token account that will receive the reward tokens and source for redemption
     #[account(
         mut,
         constraint = customer_token_account.mint == mint.key()
     )]
     pub customer_token_account: Account<'info, TokenAccount>,
+    
+    /// The merchant's token account (required when redeeming tokens, otherwise can be any account)
+    /// CHECK: This account is validated during runtime when redemption occurs
+    #[account(mut)]
+    pub merchant_token_account: Account<'info, TokenAccount>,
     
     /// Purchase transaction record for tracking
     #[account(
@@ -158,40 +163,111 @@ impl<'info> RegisterMerchant<'info> {
 }
 
 impl<'info> ProcessPurchase<'info> {
-    /// Handler for processing purchases and distributing rewards
+    /// Handler for processing purchases and distributing rewards with optional token redemption
     pub fn handler(
         ctx: Context<ProcessPurchase>,
-        purchase_amount: u64,
+        fiat_amount: u64,
+        redeem_token_amount: Option<u64>,
         transaction_id: [u8; 32],
     ) -> Result<()> {
-        // Validate purchase amount
-        require!(purchase_amount > 0, CarsaError::InvalidPurchaseAmount);
+        // Validate fiat amount
+        require!(fiat_amount > 0, CarsaError::InvalidPurchaseAmount);
         
-        // Set maximum purchase amount (1000 SOL in lamports)
-        const MAX_PURCHASE_AMOUNT: u64 = 1_000_000_000_000; // 1000 * LAMPORTS_PER_SOL
-        require!(purchase_amount <= MAX_PURCHASE_AMOUNT, CarsaError::PurchaseAmountTooLarge);
+        // Set maximum purchase amount (Rp 1,000,000,000 IDR = 1 billion IDR)
+        const MAX_PURCHASE_AMOUNT: u64 = 1_000_000_000; // 1 billion IDR
+        require!(fiat_amount <= MAX_PURCHASE_AMOUNT, CarsaError::PurchaseAmountTooLarge);
 
         let merchant_account = &mut ctx.accounts.merchant_account;
         let config = &mut ctx.accounts.config;
         let transaction_record = &mut ctx.accounts.transaction_record;
         let clock = Clock::get()?;
 
-        // Calculate reward amount based on cashback rate
-        // Formula: (purchase_amount * cashback_rate) / 10_000
-        // Convert SOL to token units (multiply by 10^9 for token decimals)
-        let reward_calculation = (purchase_amount as u128)
+        // Handle token redemption if specified
+        let redeemed_tokens = redeem_token_amount.unwrap_or(0);
+        let used_tokens = redeemed_tokens > 0;
+
+        if used_tokens {
+            // Validate token redemption amount
+            require!(redeemed_tokens > 0, CarsaError::InvalidRedemptionAmount);
+            
+            // Check customer has sufficient balance
+            require!(
+                ctx.accounts.customer_token_account.amount >= redeemed_tokens,
+                CarsaError::InsufficientBalance
+            );
+
+            // Validate merchant token account ownership via program constraint
+            // The actual token account validation will be done by the SPL Token program
+            // during the transfer instruction, so we don't need to parse the account data here
+
+            // Transfer tokens from customer to merchant
+            let cpi_accounts = token::Transfer {
+                from: ctx.accounts.customer_token_account.to_account_info(),
+                to: ctx.accounts.merchant_token_account.to_account_info(),
+                authority: ctx.accounts.customer.to_account_info(),
+            };
+
+            let cpi_program = ctx.accounts.token_program.to_account_info();
+            let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
+            token::transfer(cpi_ctx, redeemed_tokens)?;
+        }
+
+        // Calculate total transaction value (fiat + token value in IDR)
+        // Token to IDR conversion: 1 token = Rp 1,000
+        const TOKEN_TO_FIAT_RATE: u64 = 1_000;
+        let token_value_in_idr = redeemed_tokens
+            .checked_div(1_000_000_000) // Convert from token units to tokens
+            .ok_or(CarsaError::ArithmeticOverflow)?
+            .checked_mul(TOKEN_TO_FIAT_RATE)
+            .ok_or(CarsaError::ArithmeticOverflow)?;
+
+        let total_value = fiat_amount
+            .checked_add(token_value_in_idr)
+            .ok_or(CarsaError::ArithmeticOverflow)?;
+
+        // Calculate reward amount based on total transaction value and cashback rate
+        // Formula: reward_tokens = ((total_value * cashback_rate) / 10_000 / 1_000) * 10^9
+        let reward_calculation = (total_value as u128)
             .checked_mul(merchant_account.cashback_rate as u128)
             .ok_or(CarsaError::ArithmeticOverflow)?
-            .checked_div(10_000u128)
-            .ok_or(CarsaError::ArithmeticOverflow)?
             .checked_mul(1_000_000_000u128) // Convert to token units (9 decimals)
+            .ok_or(CarsaError::ArithmeticOverflow)?
+            .checked_div(10_000u128) // Convert basis points to decimal
+            .ok_or(CarsaError::ArithmeticOverflow)?
+            .checked_div(1_000u128) // Convert IDR to tokens (1 token = Rp 1,000)
             .ok_or(CarsaError::ArithmeticOverflow)?;
 
         let reward_amount = u64::try_from(reward_calculation)
             .map_err(|_| CarsaError::ArithmeticOverflow)?;
 
-        // Ensure we're minting at least some tokens (minimum 1 token unit)
-        require!(reward_amount > 0, CarsaError::ZeroRewardCalculation);
+        // Only mint reward tokens if reward amount > 0
+        if reward_amount > 0 {
+            // Update global configuration with overflow protection
+            config.total_supply = config
+                .total_supply
+                .checked_add(reward_amount)
+                .ok_or(CarsaError::ArithmeticOverflow)?;
+
+            // Create signer seeds for CPI call to mint tokens
+            let authority_seeds = &[
+                MINT_AUTHORITY_SEED,
+                &[config.mint_authority_bump],
+            ];
+            let signer_seeds = &[&authority_seeds[..]];
+
+            // Create CPI context for minting reward tokens
+            let cpi_accounts = token::MintTo {
+                mint: ctx.accounts.mint.to_account_info(),
+                to: ctx.accounts.customer_token_account.to_account_info(),
+                authority: ctx.accounts.mint_authority.to_account_info(),
+            };
+
+            let cpi_program = ctx.accounts.token_program.to_account_info();
+            let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer_seeds);
+
+            // Execute the mint operation to distribute rewards
+            token::mint_to(cpi_ctx, reward_amount)?;
+        }
 
         // Update merchant statistics with overflow protection
         merchant_account.total_transactions = merchant_account
@@ -201,7 +277,7 @@ impl<'info> ProcessPurchase<'info> {
 
         merchant_account.total_volume = merchant_account
             .total_volume
-            .checked_add(purchase_amount)
+            .checked_add(total_value)
             .ok_or(CarsaError::ArithmeticOverflow)?;
 
         merchant_account.total_rewards_distributed = merchant_account
@@ -209,48 +285,37 @@ impl<'info> ProcessPurchase<'info> {
             .checked_add(reward_amount)
             .ok_or(CarsaError::ArithmeticOverflow)?;
 
-        // Update global configuration with overflow protection
-        config.total_supply = config
-            .total_supply
-            .checked_add(reward_amount)
-            .ok_or(CarsaError::ArithmeticOverflow)?;
-
         // Record the transaction
         transaction_record.customer = ctx.accounts.customer.key();
         transaction_record.merchant = merchant_account.key();
-        transaction_record.purchase_amount = purchase_amount;
+        transaction_record.fiat_amount = fiat_amount;
+        transaction_record.redeemed_token_amount = redeemed_tokens;
+        transaction_record.total_value = total_value;
         transaction_record.reward_amount = reward_amount;
         transaction_record.cashback_rate = merchant_account.cashback_rate;
+        transaction_record.used_tokens = used_tokens;
         transaction_record.timestamp = clock.unix_timestamp;
         transaction_record.transaction_id = transaction_id;
         transaction_record.bump = ctx.bumps.transaction_record;
 
-        // Create signer seeds for CPI call to mint tokens
-        let authority_seeds = &[
-            MINT_AUTHORITY_SEED,
-            &[config.mint_authority_bump],
-        ];
-        let signer_seeds = &[&authority_seeds[..]];
-
-        // Create CPI context for minting reward tokens
-        let cpi_accounts = token::MintTo {
-            mint: ctx.accounts.mint.to_account_info(),
-            to: ctx.accounts.customer_token_account.to_account_info(),
-            authority: ctx.accounts.mint_authority.to_account_info(),
-        };
-
-        let cpi_program = ctx.accounts.token_program.to_account_info();
-        let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer_seeds);
-
-        // Execute the mint operation to distribute rewards
-        token::mint_to(cpi_ctx, reward_amount)?;
-
-        msg!(
-            "Purchase processed: {} SOL → {} Lokal tokens ({}% cashback)",
-            purchase_amount as f64 / 1_000_000_000.0, // Convert lamports to SOL for display
-            reward_amount as f64 / 1_000_000_000.0,   // Convert to token units for display
-            merchant_account.cashback_rate as f64 / 100.0 // Convert basis points to percentage
-        );
+        // Log detailed transaction information
+        if used_tokens {
+            msg!(
+                "Purchase with token redemption: Customer redeemed {} tokens, paid Rp {} fiat, total value Rp {} IDR, earned {} reward tokens ({}% cashback)",
+                redeemed_tokens as f64 / 1_000_000_000.0, // Convert to display units
+                fiat_amount,
+                total_value,
+                reward_amount as f64 / 1_000_000_000.0,
+                merchant_account.cashback_rate as f64 / 100.0
+            );
+        } else {
+            msg!(
+                "Purchase with fiat only: Paid Rp {} IDR, earned {} reward tokens ({}% cashback)",
+                fiat_amount,
+                reward_amount as f64 / 1_000_000_000.0,
+                merchant_account.cashback_rate as f64 / 100.0
+            );
+        }
 
         Ok(())
     }

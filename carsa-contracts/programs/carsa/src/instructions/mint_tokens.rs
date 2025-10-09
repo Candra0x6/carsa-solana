@@ -58,6 +58,12 @@ pub struct InitializeLokalMint<'info> {
 #[derive(Accounts)]
 #[instruction(amount: u64)]
 pub struct MintLokalTokens<'info> {
+    /// The authority that can mint tokens (must be the update authority)
+    #[account(
+        constraint = authority.key() == config.update_authority @ CarsaError::UpdateAuthorityMismatch
+    )]
+    pub authority: Signer<'info>,
+    
     /// The mint account for Lokal tokens
     /// Must match the mint stored in config
     #[account(

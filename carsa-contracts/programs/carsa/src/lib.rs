@@ -63,22 +63,24 @@ pub mod carsa {
         RegisterMerchant::handler(ctx, name, category, cashback_rate)
     }
 
-    /// Process a purchase transaction and distribute reward tokens
+    /// Process a purchase transaction and distribute reward tokens with optional token redemption
     /// This is the core instruction that implements the loyalty program logic
     /// 
     /// # Arguments
     /// * `ctx` - The instruction context containing required accounts
-    /// * `purchase_amount` - The purchase amount in SOL lamports
+    /// * `fiat_amount` - The fiat payment amount in Indonesian Rupiah (IDR)
+    /// * `redeem_token_amount` - Optional amount of tokens to redeem as payment
     /// * `transaction_id` - Unique identifier for this transaction (32 bytes)
     /// 
     /// # Returns
     /// * `Result<()>` - Success or error result
     pub fn process_purchase(
         ctx: Context<ProcessPurchase>,
-        purchase_amount: u64,
+        fiat_amount: u64,
+        redeem_token_amount: Option<u64>,
         transaction_id: [u8; 32],
     ) -> Result<()> {
-        ProcessPurchase::handler(ctx, purchase_amount, transaction_id)
+        ProcessPurchase::handler(ctx, fiat_amount, redeem_token_amount, transaction_id)
     }
 
     /// Update merchant settings such as cashback rate and active status
@@ -119,40 +121,10 @@ pub mod carsa {
         TransferTokens::handler(ctx, amount, transaction_id, memo)
     }
 
-    /// Redeem Lokal tokens at a merchant for discounts or payments
-    /// This instruction handles the spending side of the loyalty program
-    /// 
-    /// # Arguments
-    /// * `ctx` - The instruction context containing required accounts
-    /// * `token_amount` - The amount of tokens to redeem (in smallest unit, considering 9 decimals)
-    /// * `fiat_value` - The fiat value of the purchase in lamports equivalent
-    /// * `discount_rate` - The discount percentage in basis points (e.g., 1000 = 10%)
-    /// * `transaction_id` - Unique identifier for this transaction (32 bytes)
-    /// 
-    /// # Returns
-    /// * `Result<()>` - Success or error result
-    pub fn redeem_tokens(
-        ctx: Context<RedeemTokens>,
-        token_amount: u64,
-        fiat_value: u64,
-        discount_rate: u16,
-        transaction_id: [u8; 32],
-    ) -> Result<()> {
-        RedeemTokens::handler(ctx, token_amount, fiat_value, discount_rate, transaction_id)
-    }
-
-    /// Burn Lokal tokens (optional deflation mechanism)
-    /// Allows merchants to burn tokens they receive from redemptions
-    /// 
-    /// # Arguments
-    /// * `ctx` - The instruction context containing required accounts
-    /// * `amount` - The amount of tokens to burn (in smallest unit, considering 9 decimals)
-    /// 
-    /// # Returns
-    /// * `Result<()>` - Success or error result
-    pub fn burn_tokens(ctx: Context<BurnTokens>, amount: u64) -> Result<()> {
-        BurnTokens::handler(ctx, amount)
-    }
+    // NOTE: redeem_tokens and burn_tokens functions have been integrated into process_purchase
+    // Token redemption is now handled as an optional parameter in process_purchase
+    // This provides a unified transaction experience where users can pay with tokens
+    // and still earn rewards in a single transaction
 
     /// Legacy initialize function for backwards compatibility
     /// This will be removed in future versions

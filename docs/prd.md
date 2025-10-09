@@ -1,25 +1,25 @@
 
 ---
 
-# 📄 Project Requirements Document (PRD)
+  # 📄 Project Requirements Document (PRD)
 
-### Project: *Carsa – Hyperlocal Community Currency & Loyalty Program*
+  ### Project: *Carsa – Hyperlocal Community Currency & Loyalty Program*
 
-### Hackathon MVP Version (Solana + Anchor)
+  ### Hackathon MVP Version (Solana + Anchor)
 
----
+  ---
 
-## 1. App Overview
+  ## 1. App Overview
 
-**Carsa** is a mobile-first loyalty & rewards app powered by blockchain.
-Users earn **Lokal tokens** when shopping at local MSMEs and can spend them across a **city-wide coalition of merchants**.
+  **Carsa** is a mobile-first loyalty & rewards app powered by blockchain.
+  Users earn **Lokal tokens** when shopping at local MSMEs and can spend them across a **city-wide coalition of merchants**.
 
-**Goal for MVP**:
+  **Goal for MVP**:
 
-* Showcase **earning + spending Lokal tokens** across at least **2 types of merchants** (e.g., coffee shop & bookstore).
-* Demonstrate **closed-loop token economy** via simple mobile/web app running on **Solana testnet**.
+  * Showcase **earning + spending Lokal tokens** across at least **2 types of merchants** (e.g., coffee shop & bookstore).
+  * Demonstrate **closed-loop token economy** via simple mobile/web app running on **Solana testnet**.
 
----
+  ---
 
 ## 2. User Flows
 

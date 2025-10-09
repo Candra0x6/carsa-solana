@@ -1,7 +1,7 @@
 import * as anchor from '@coral-xyz/anchor';
 import { Connection, PublicKey, SystemProgram } from '@solana/web3.js';
 import { AnchorProvider, Program } from '@coral-xyz/anchor';
-import { TOKEN_PROGRAM_ID, getAssociatedTokenAddress, createAssociatedTokenAccountInstruction } from '@solana/spl-token';
+import { TOKEN_PROGRAM_ID, getAssociatedTokenAddress, createAssociatedTokenAccountInstruction, getAccount } from '@solana/spl-token';
 import { 
   getConnection, 
   getMerchantPDA,
@@ -10,7 +10,7 @@ import {
   getTransactionRecordPDA
 } from './solana';
 
-// Import the IDL
+// Import the IDL from the contract
 import CarsaIDL from './carsa.json';
 
 export interface ClientAnchorConfig {
@@ -34,7 +34,7 @@ export class ClientAnchorClient {
       commitment: 'confirmed'
     });
 
-    // Initialize the program with actual IDL
+    // Initialize the program with IDL (temporary without strict typing)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.program = new Program(CarsaIDL as any, this.provider);
   }
@@ -152,12 +152,90 @@ export class ClientAnchorClient {
   }
 
   /**
+   * Get the connected wallet's LOKAL token balance
+   * Returns the balance in the smallest token unit (considering decimals)
+   */
+  async getLokalTokenBalance(): Promise<{ balance: number; exists: boolean; decimals: number }> {
+    try {
+      const walletAddress = this.provider.wallet.publicKey;
+      
+      if (!walletAddress) {
+        throw new Error('Wallet not connected');
+      }
+
+      // Get the LOKAL mint address from environment or config
+      const mintAddress = new PublicKey(process.env.NEXT_PUBLIC_LOKAL_MINT_ADDRESS || 'REPLACE_WITH_ACTUAL_MINT');
+      
+      // Get the associated token account address for the connected wallet
+      const tokenAccountAddress = await getAssociatedTokenAddress(
+        mintAddress,
+        walletAddress
+      );
+
+      // Check if the token account exists
+      const accountInfo = await this.connection.getAccountInfo(tokenAccountAddress);
+      
+      if (!accountInfo) {
+        // Token account doesn't exist, so balance is 0
+        return {
+          balance: 0,
+          exists: false,
+          decimals: 9, // Default decimals for LOKAL token
+        };
+      }
+
+      try {
+        // Get the token account data
+        const tokenAccount = await getAccount(this.connection, tokenAccountAddress);
+        
+        return {
+          balance: Number(tokenAccount.amount),
+          exists: true,
+          decimals: 9, // LOKAL token decimals - you might want to get this from mint info
+        };
+      } catch (accountError) {
+        console.error('Error parsing token account:', accountError);
+        return {
+          balance: 0,
+          exists: false,
+          decimals: 9,
+        };
+      }
+      
+    } catch (error) {
+      console.error('Error fetching LOKAL token balance:', error);
+      throw new Error(`Failed to fetch LOKAL token balance: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Get the connected wallet's LOKAL token balance formatted for display
+   * Returns the balance as a human-readable number (accounting for decimals)
+   */
+  async getFormattedLokalBalance(): Promise<{ balance: string; balanceNumber: number; exists: boolean }> {
+    try {
+      const balanceInfo = await this.getLokalTokenBalance();
+      const balanceNumber = balanceInfo.balance / Math.pow(10, balanceInfo.decimals);
+      
+      return {
+        balance: balanceNumber.toFixed(2), // Format to 2 decimal places for display
+        balanceNumber: balanceNumber,
+        exists: balanceInfo.exists,
+      };
+    } catch (error) {
+      console.error('Error fetching formatted LOKAL balance:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Process a purchase transaction and distribute reward tokens
    * The connected wallet will be the customer receiving tokens
    */
   async processPurchase(params: {
     merchantWalletAddress: string;
     purchaseAmount: number;
+    redeemTokenAmount?: number;
     transactionId: Uint8Array;
   }): Promise<string> {
     const customer = this.provider.wallet.publicKey;
@@ -183,10 +261,16 @@ export class ClientAnchorClient {
     // TODO: Parse config account to get actual mint address
     const mintAddress = new PublicKey(process.env.NEXT_PUBLIC_LOKAL_MINT_ADDRESS || 'REPLACE_WITH_ACTUAL_MINT');
 
-    // Get or create customer's associated token account
+    // Get customer's associated token account
     const customerTokenAccount = await getAssociatedTokenAddress(
       mintAddress,
       customer
+    );
+
+    // Get merchant's associated token account (required by the contract)
+    const merchantTokenAccount = await getAssociatedTokenAddress(
+      mintAddress,
+      merchantWallet
     );
 
     // Check if customer token account exists
@@ -206,10 +290,12 @@ export class ClientAnchorClient {
       instructions.push(createATAInstruction);
     }
 
-    // Create the process purchase instruction
+    // Create the process purchase instruction with proper parameters
+    // Note: Using snake_case names that match the IDL exactly
     const processPurchaseInstruction = await this.program.methods
       .processPurchase(
         new anchor.BN(params.purchaseAmount),
+        params.redeemTokenAmount ? new anchor.BN(params.redeemTokenAmount) : null,
         Array.from(params.transactionId)
       )
       .accounts({
@@ -219,6 +305,7 @@ export class ClientAnchorClient {
         mintAuthority: mintAuthorityPDA,
         config: configPDA,
         customerTokenAccount: customerTokenAccount,
+        merchantTokenAccount: merchantTokenAccount,
         transactionRecord: transactionRecordPDA,
         tokenProgram: TOKEN_PROGRAM_ID,
         systemProgram: SystemProgram.programId,
@@ -240,6 +327,24 @@ export class ClientAnchorClient {
     const signature = await this.provider.sendAndConfirm(transaction);
     
     return signature;
+  }
+
+  /**
+   * Process a purchase transaction with token redemption
+   * This method allows customers to use LOKAL tokens as payment while still earning rewards
+   */
+  async processPurchaseWithRedemption(params: {
+    merchantWalletAddress: string;
+    fiatAmount: number;
+    redeemTokenAmount: number;
+    transactionId: Uint8Array;
+  }): Promise<string> {
+    return this.processPurchase({
+      merchantWalletAddress: params.merchantWalletAddress,
+      purchaseAmount: params.fiatAmount,
+      redeemTokenAmount: params.redeemTokenAmount,
+      transactionId: params.transactionId,
+    });
   }
 
   /**
@@ -309,6 +414,7 @@ export async function createProcessPurchaseInstruction(
   params: {
     merchantWalletAddress: string;
     purchaseAmount: number;
+    redeemTokenAmount?: number;
     transactionId: Uint8Array;
   }
 ) {
@@ -329,15 +435,21 @@ export async function createProcessPurchaseInstruction(
   // Get mint address (hardcoded for now - should be retrieved from config in production)
   const mintAddress = new PublicKey(process.env.NEXT_PUBLIC_LOKAL_MINT_ADDRESS || 'REPLACE_WITH_ACTUAL_MINT');
 
-  // Get customer's associated token account
+  // Get customer's and merchant's associated token accounts
   const customerTokenAccount = await getAssociatedTokenAddress(
     mintAddress,
     customer
   );
 
+  const merchantTokenAccount = await getAssociatedTokenAddress(
+    mintAddress,
+    merchantWallet
+  );
+
   return await client['program'].methods
     .processPurchase(
       new anchor.BN(params.purchaseAmount),
+      params.redeemTokenAmount ? new anchor.BN(params.redeemTokenAmount) : null,
       Array.from(params.transactionId)
     )
     .accounts({
@@ -347,9 +459,32 @@ export async function createProcessPurchaseInstruction(
       mintAuthority: mintAuthorityPDA,
       config: configPDA,
       customerTokenAccount: customerTokenAccount,
+      merchantTokenAccount: merchantTokenAccount,
       transactionRecord: transactionRecordPDA,
       tokenProgram: TOKEN_PROGRAM_ID,
       systemProgram: SystemProgram.programId,
     })
     .instruction();
+}
+
+/**
+ * Process a purchase transaction with optional token redemption
+ * This creates an instruction for the unified processPurchase method that handles both
+ * reward distribution and token redemption in a single transaction
+ */
+export async function createProcessPurchaseWithRedemptionInstruction(
+  config: ClientAnchorConfig,
+  params: {
+    merchantWalletAddress: string;
+    fiatAmount: number;
+    redeemTokenAmount?: number;
+    transactionId: Uint8Array;
+  }
+) {
+  return createProcessPurchaseInstruction(config, {
+    merchantWalletAddress: params.merchantWalletAddress,
+    purchaseAmount: params.fiatAmount,
+    redeemTokenAmount: params.redeemTokenAmount,
+    transactionId: params.transactionId,
+  });
 }

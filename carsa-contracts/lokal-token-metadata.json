@@ -1,0 +1,59 @@
+{
+  "name": "Lokal Token",
+  "symbol": "LOKAL",
+  "description": "CARSA Loyalty Program Token - Earn rewards from local merchants and redeem them across the ecosystem. Lokal tokens incentivize community engagement and support local businesses.",
+  "image": "ttps://juydkpjoftwerhokawvj.supabase.co/storage/v1/object/public/merchant-qr-codes/carsa.png",
+  "external_url": "https://carsa.io",
+  "attributes": [
+    {
+      "trait_type": "Type",
+      "value": "Loyalty Token"
+    },
+    {
+      "trait_type": "Decimals", 
+      "value": "9"
+    },
+    {
+      "trait_type": "Network",
+      "value": "Solana"
+    },
+    {
+      "trait_type": "Use Case",
+      "value": "Merchant Rewards"
+    },
+    {
+      "trait_type": "Program",
+      "value": "CARSA Loyalty"
+    }
+  ],
+  "properties": {
+    "category": "fungible",
+    "creators": [
+      {
+        "address": "UPDATE_WITH_YOUR_WALLET_ADDRESS",
+        "share": 100
+      }
+    ]
+  },
+  "collection": {
+    "name": "CARSA Ecosystem",
+    "family": "Loyalty Tokens"
+  },
+  "additional_metadata": {
+    "website": "https://carsa.io",
+    "twitter": "@carsa_io",
+    "discord": "https://discord.gg/carsa",
+    "whitepaper": "https://carsa.io/whitepaper",
+    "tokenomics": {
+      "total_supply": "Unlimited (Mintable)",
+      "distribution": "Merchant Rewards & User Incentives",
+      "burn_mechanism": "Optional merchant burn"
+    },
+    "utility": [
+      "Earn rewards from purchases at participating merchants",
+      "Redeem for discounts and products",
+      "Transfer between users",
+      "Merchant loyalty program participation"
+    ]
+  }
+}

@@ -7,42 +7,96 @@ import { PublicKey } from '@solana/web3.js';
 import { ClientAnchorClient } from '@/lib/client-anchor';
 import * as crypto from 'crypto';
 
-// Example function showing how to process a purchase
+/**
+ * Example function showing how to process a purchase (including database recording)
+ * Note: This example uses placeholder values. In real usage, obtain wallet from useWallet() hook.
+ */
 export async function exampleProcessPurchase() {
-  // This would typically be obtained from wallet adapter
-  // const wallet = useWallet(); // In a React component
+  // In real usage, you would get this from useWallet() hook:
+  // const { wallet, publicKey } = useWallet();
   
-  // For example purposes, these would be real values:
+  // Mock wallet for example (replace with real wallet in production)
+  const mockWallet = {
+    publicKey: new PublicKey('11111111111111111111111111111111'), // Replace with real public key
+    signTransaction: async (tx: unknown) => tx,
+    signAllTransactions: async (txs: unknown[]) => txs,
+  };
+  
   const config = {
-    wallet: {} as any, // Your connected wallet from useWallet()
+    wallet: mockWallet,
     // connection: optional custom connection
   };
 
   try {
     // Create the client
     const client = new ClientAnchorClient(config);
+    const merchantWalletAddress = 'MERCHANT_WALLET_ADDRESS_HERE'; // Replace with actual merchant wallet
+
+    // First, verify merchant exists on-chain
+    const merchantWallet = new PublicKey(merchantWalletAddress);
+    const merchantOnChainData = await client.getMerchantDataByWallet(merchantWallet);
+    
+    if (!merchantOnChainData) {
+      throw new Error('Merchant account not found on blockchain');
+    }
+
+    // Fetch merchant database data to get the merchant ID
+    const merchantApiResponse = await fetch(`/api/merchants/by-wallet/${merchantWalletAddress}`);
+    if (!merchantApiResponse.ok) {
+      throw new Error('Merchant not found in database');
+    }
+    
+    const merchantApiData = await merchantApiResponse.json();
+    if (!merchantApiData.success || !merchantApiData.data) {
+      throw new Error('Unable to fetch merchant data from database');
+    }
 
     // Generate a unique transaction ID
     const transactionId = crypto.randomBytes(32);
 
     // Process purchase parameters
     const purchaseParams = {
-      merchantWalletAddress: 'MERCHANT_WALLET_ADDRESS_HERE', // Replace with actual merchant wallet
+      merchantWalletAddress: merchantWalletAddress,
       purchaseAmount: 100000000, // 0.1 SOL in lamports (100,000,000 lamports)
       transactionId: new Uint8Array(transactionId)
     };
 
-    // Execute the purchase transaction
+    // Execute the purchase transaction on blockchain
     const signature = await client.processPurchase(purchaseParams);
+
+    // Record the transaction in the database
+    const apiResponse = await fetch('/api/anchor/process-purchase', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        customerWallet: config.wallet.publicKey.toString(), // Would be from actual wallet
+        merchantId: merchantApiData.data.id,
+        purchaseAmount: 10000, // Convert to cents (0.1 SOL worth)
+        txSignature: signature,
+        idempotencyKey: Buffer.from(transactionId).toString('hex')
+      }),
+    });
+
+    const apiResult = await apiResponse.json();
+    
+    if (!apiResult.success) {
+      throw new Error(`Database recording failed: ${apiResult.error}`);
+    }
 
     console.log('Purchase processed successfully!');
     console.log('Transaction signature:', signature);
+    console.log('Tokens awarded:', apiResult.data?.tokensAwarded || 0);
+    console.log('Database record ID:', apiResult.data?.transactionId);
     console.log('View on Solana Explorer:', `https://explorer.solana.com/tx/${signature}?cluster=devnet`);
 
     return {
       success: true,
       signature,
-      transactionId: Buffer.from(transactionId).toString('hex')
+      transactionId: Buffer.from(transactionId).toString('hex'),
+      tokensAwarded: apiResult.data?.tokensAwarded || 0,
+      databaseTransactionId: apiResult.data?.transactionId
     };
 
   } catch (error) {
@@ -56,8 +110,9 @@ export async function exampleProcessPurchase() {
 
 // Example function showing how to update merchant settings
 export async function exampleUpdateMerchant() {
+  // Note: In real usage, get wallet from useWallet() hook
   const config = {
-    wallet: {} as any, // Your connected wallet (must be merchant owner)
+    wallet: {} as unknown as any, // Your connected wallet (must be merchant owner)
   };
 
   try {

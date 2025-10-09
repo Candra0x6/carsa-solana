@@ -4,7 +4,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import PurchaseProcessor from '@/components/PurchaseProcessor';
+import PurchaseTransaction from '@/components/PurchaseTransaction';
+import RedeemTokensComponent from '@/components/RedeemTokensComponent';
 
 interface PurchaseResult {
   transactionId: string;
@@ -273,12 +274,8 @@ const MerchantDetailPage: React.FC = () => {
             </div>
             <div className="mt-5">
 
-            <PurchaseProcessor
-                merchantWalletAddress={merchant.walletAddress}
-                merchantId={merchantId}
-                merchantName={merchant.name}
-            onSuccess={handlePurchaseSuccess}
-          />
+            
+          <PurchaseTransaction merchantWalletAddress={merchant.walletAddress} merchantName={merchant.name} />
         </div>
           </div>
 

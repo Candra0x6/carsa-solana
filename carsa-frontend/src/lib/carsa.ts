@@ -377,8 +377,7 @@ export type Carsa = {
           "name": "merchantTokenAccount",
           "docs": [
             "The merchant's token account (required when redeeming tokens, otherwise can be any account)"
-          ],
-          "writable": true
+          ]
         },
         {
           "name": "transactionRecord",

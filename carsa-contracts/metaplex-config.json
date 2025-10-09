@@ -1,0 +1,7 @@
+{
+  "json": "./lokal-token-metadata-complete.json",
+  "keypair": "/home/c4n/.config/solana/id.json",
+  "rpc": "https://api.devnet.solana.com",
+  "mint": "5hnUzmpcavbtWJ2LmL9NMefm58gvBRqWsyUtpQd3QHC9",
+  "update_authority": "8fnTQa166vyG5KaqvZrr1rAaJGZD1CzwphUHgmYLtVmW"
+}

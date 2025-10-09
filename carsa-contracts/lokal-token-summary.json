@@ -1,0 +1,27 @@
+{
+  "token": {
+    "name": "Lokal Token",
+    "symbol": "LOKAL",
+    "mintAddress": "5hnUzmpcavbtWJ2LmL9NMefm58gvBRqWsyUtpQd3QHC9",
+    "decimals": 9,
+    "description": "CARSA Loyalty Program Token - Earn rewards from local merchants and redeem them across the ecosystem. Lokal tokens incentivize community engagement and support local businesses.",
+    "metadataFile": "./lokal-token-metadata-complete.json"
+  },
+  "program": {
+    "programId": "FicaEwstRkE9pwHZPWS34XAjnbH6vc8aZ2Ly4EiksmxY",
+    "configPda": "Bq1Dgm6ZJQ9NHHAVuBhmBPrmhBY5xLNa4Gvc2cyX9dUs",
+    "mintAuthorityPda": "FoGPNye1EkjTPwTc15D3WKBgjeg3L1pbxnxrrSCSMFxC",
+    "updateAuthority": "8fnTQa166vyG5KaqvZrr1rAaJGZD1CzwphUHgmYLtVmW"
+  },
+  "metadata": {
+    "configFile": "./metaplex-config.json",
+    "uploadScript": "./create-token-metadata.sh",
+    "createdBy": "8fnTQa166vyG5KaqvZrr1rAaJGZD1CzwphUHgmYLtVmW"
+  },
+  "network": "https://api.devnet.solana.com",
+  "instructions": [
+    "1. Run './create-token-metadata.sh' to create on-chain metadata",
+    "2. Or use 'metaplex create-metadata' command manually",
+    "3. Metadata will be uploaded to Arweave automatically"
+  ]
+}

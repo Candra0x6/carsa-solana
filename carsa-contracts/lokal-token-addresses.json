@@ -3,5 +3,9 @@
   "configPda": "Bq1Dgm6ZJQ9NHHAVuBhmBPrmhBY5xLNa4Gvc2cyX9dUs",
   "mintAuthorityPda": "FoGPNye1EkjTPwTc15D3WKBgjeg3L1pbxnxrrSCSMFxC",
   "programId": "FicaEwstRkE9pwHZPWS34XAjnbH6vc8aZ2Ly4EiksmxY",
-  "updateAuthority": "8fnTQa166vyG5KaqvZrr1rAaJGZD1CzwphUHgmYLtVmW"
+  "updateAuthority": "8fnTQa166vyG5KaqvZrr1rAaJGZD1CzwphUHgmYLtVmW",
+  "tokenName": "Lokal Token",
+  "tokenSymbol": "LOKAL",
+  "metadataFile": "./lokal-token-metadata-complete.json",
+  "uploadScript": "./create-token-metadata.sh"
 }

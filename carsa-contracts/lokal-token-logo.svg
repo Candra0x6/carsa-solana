@@ -1,0 +1,38 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="100" cy="100" r="95" fill="#4F46E5" stroke="#3730A3" stroke-width="4"/>
+  
+  <!-- Inner Circle -->
+  <circle cx="100" cy="100" r="75" fill="#6366F1" opacity="0.8"/>
+  
+  <!-- LOKAL Text -->
+  <text x="100" y="85" 
+        font-family="Arial Black, sans-serif" 
+        font-size="24" 
+        font-weight="900" 
+        text-anchor="middle" 
+        fill="white">LOKAL</text>
+  
+  <!-- Token Subtitle -->
+  <text x="100" y="105" 
+        font-family="Arial, sans-serif" 
+        font-size="12" 
+        text-anchor="middle" 
+        fill="#E0E7FF" 
+        opacity="0.9">LOYALTY TOKEN</text>
+  
+  <!-- Decorative Stars -->
+  <g fill="#FBBF24" opacity="0.7">
+    <polygon points="60,40 63,49 72,49 65,55 68,64 60,58 52,64 55,55 48,49 57,49" transform="scale(0.8)"/>
+    <polygon points="140,40 143,49 152,49 145,55 148,64 140,58 132,64 135,55 128,49 137,49" transform="scale(0.8)"/>
+    <polygon points="40,140 43,149 52,149 45,155 48,164 40,158 32,164 35,155 28,149 37,149" transform="scale(0.6)"/>
+    <polygon points="160,140 163,149 172,149 165,155 168,164 160,158 152,164 155,155 148,149 157,149" transform="scale(0.6)"/>
+  </g>
+  
+  <!-- Bottom Curve -->
+  <path d="M 30 140 Q 100 170 170 140" 
+        stroke="#E0E7FF" 
+        stroke-width="2" 
+        fill="none" 
+        opacity="0.5"/>
+</svg>

@@ -165,7 +165,7 @@ EOF
     print_step "Installing contract dependencies..."
     yarn install
     
-    # Build the contracts
+    # Build the contracts   
     print_step "Building Anchor contracts..."
     anchor build
     
@@ -203,6 +203,48 @@ initialize_token() {
     npx ts-node initialize-token.ts
     
     print_success "Token initialization complete"
+}
+
+create_token_metadata() {
+    print_step "Creating token metadata for LOKAL token..."
+    
+    cd "$CONTRACTS_DIR"
+    
+    # Install Metaplex dependencies if not present
+    if ! npm list @metaplex-foundation/js &> /dev/null; then
+        print_step "Installing Metaplex dependencies..."
+        yarn add @metaplex-foundation/js @metaplex-foundation/mpl-token-metadata
+    fi
+    
+    # Create metadata files and scripts
+    print_step "Preparing token metadata files..."
+    npx ts-node create-metadata.ts
+    
+    # Optionally create the on-chain metadata (requires additional SOL)
+    read -p "Do you want to create on-chain metadata now? This requires ~0.05 SOL for Arweave upload. (y/N): " create_onchain
+    
+    if [[ $create_onchain =~ ^[Yy]$ ]]; then
+        print_step "Creating on-chain metadata with Metaplex CLI..."
+        
+        # Check if metaplex CLI is installed
+        if ! command -v metaplex &> /dev/null; then
+            print_step "Installing Metaplex CLI..."
+            bash <(curl -sSf https://sugar.metaplex.com/install.sh)
+        fi
+        
+        # Run the upload script
+        if [ -f create-token-metadata.sh ]; then
+            chmod +x create-token-metadata.sh
+            ./create-token-metadata.sh
+            print_success "On-chain metadata created successfully!"
+        else
+            print_error "Metadata upload script not found"
+        fi
+    else
+        print_success "Metadata files prepared. Run './create-token-metadata.sh' later to create on-chain metadata."
+    fi
+    
+    print_success "Token metadata setup complete"
 }
 
 setup_frontend_env() {
@@ -276,19 +318,31 @@ print_summary() {
         echo "• Mint Address: $(cat "$CONTRACTS_DIR/lokal-token-addresses.json" | grep -o '"mintAddress": "[^"]*"' | cut -d'"' -f4)"
     fi
     
+    # Check for metadata files
+    if [ -f "$CONTRACTS_DIR/lokal-token-metadata-complete.json" ]; then
+        echo "• Token Metadata: Ready (see lokal-token-summary.json)"
+        if [ -f "$CONTRACTS_DIR/create-token-metadata.sh" ]; then
+            echo "• Metadata Upload: Run 'cd carsa-contracts && ./create-token-metadata.sh'"
+        fi
+    fi
+    
     echo ""
     echo -e "${YELLOW}🚀 Next Steps:${NC}"
-    echo "1. Start the frontend development server:"
+    echo "1. Create on-chain token metadata (if not done):"
+    echo "   cd carsa-contracts && ./create-token-metadata.sh"
+    echo ""
+    echo "2. Start the frontend development server:"
     echo "   cd carsa-frontend && yarn dev"
     echo ""
-    echo "2. Set up your database (if using Prisma):"
+    echo "3. Set up your database (if using Prisma):"
     echo "   cd carsa-frontend && npx prisma migrate dev"
     echo ""
-    echo "3. Fund your wallet with devnet SOL:"
+    echo "4. Fund your wallet with devnet SOL:"
     echo "   solana airdrop 2"
     echo ""
     echo -e "${YELLOW}📁 Important Files:${NC}"
     echo "• Contract addresses: carsa-contracts/lokal-token-addresses.json"
+    echo "• Token metadata: carsa-contracts/lokal-token-summary.json"
     echo "• Frontend env: carsa-frontend/.env.local"
     echo "• Solana config: ~/.config/solana/cli/config.yml"
 }
@@ -302,6 +356,7 @@ main() {
     setup_contracts
     deploy_contracts
     initialize_token
+    create_token_metadata
     setup_frontend_env
     copy_program_types
     

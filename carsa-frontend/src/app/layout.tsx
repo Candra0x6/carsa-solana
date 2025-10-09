@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import "@solana/wallet-adapter-react-ui/styles.css";
 import { WalletContextProvider } from "@/components/WalletContextProvider";
 import { AuthProvider } from "@/components/AuthProvider";
+import { Navbar } from "@/components/Navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,7 +33,10 @@ export default function RootLayout({
       >
         <AuthProvider>
           <WalletContextProvider>
-            {children}
+            <Navbar />
+            <main className="min-h-screen">
+              {children}
+            </main>
           </WalletContextProvider>
         </AuthProvider>
       </body>

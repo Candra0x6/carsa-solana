@@ -12,124 +12,6 @@
   ],
   "instructions": [
     {
-      "name": "burn_tokens",
-      "docs": [
-        "Burn Lokal tokens (optional deflation mechanism)",
-        "Allows merchants to burn tokens they receive from redemptions",
-        "",
-        "# Arguments",
-        "* `ctx` - The instruction context containing required accounts",
-        "* `amount` - The amount of tokens to burn (in smallest unit, considering 9 decimals)",
-        "",
-        "# Returns",
-        "* `Result<()>` - Success or error result"
-      ],
-      "discriminator": [
-        76,
-        15,
-        51,
-        254,
-        229,
-        215,
-        121,
-        66
-      ],
-      "accounts": [
-        {
-          "name": "merchant_owner",
-          "docs": [
-            "The merchant burning tokens"
-          ],
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "merchant_account",
-          "docs": [
-            "The merchant account"
-          ]
-        },
-        {
-          "name": "merchant_token_account",
-          "docs": [
-            "The merchant's token account (tokens to be burned)"
-          ],
-          "writable": true
-        },
-        {
-          "name": "mint",
-          "docs": [
-            "The Lokal token mint"
-          ],
-          "writable": true
-        },
-        {
-          "name": "mint_authority",
-          "docs": [
-            "Program Derived Address that acts as the mint authority"
-          ],
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  109,
-                  105,
-                  110,
-                  116,
-                  95,
-                  97,
-                  117,
-                  116,
-                  104,
-                  111,
-                  114,
-                  105,
-                  116,
-                  121
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "name": "config",
-          "docs": [
-            "Configuration account containing mint settings"
-          ],
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  111,
-                  110,
-                  102,
-                  105,
-                  103
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "name": "token_program",
-          "docs": [
-            "SPL Token program for burn operations"
-          ],
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        }
-      ],
-      "args": [
-        {
-          "name": "amount",
-          "type": "u64"
-        }
-      ]
-    },
-    {
       "name": "initialize",
       "docs": [
         "Legacy initialize function for backwards compatibility",
@@ -291,6 +173,13 @@
       ],
       "accounts": [
         {
+          "name": "authority",
+          "docs": [
+            "The authority that can mint tokens (must be the update authority)"
+          ],
+          "signer": true
+        },
+        {
           "name": "mint",
           "docs": [
             "The mint account for Lokal tokens",
@@ -375,12 +264,13 @@
     {
       "name": "process_purchase",
       "docs": [
-        "Process a purchase transaction and distribute reward tokens",
+        "Process a purchase transaction and distribute reward tokens with optional token redemption",
         "This is the core instruction that implements the loyalty program logic",
         "",
         "# Arguments",
         "* `ctx` - The instruction context containing required accounts",
-        "* `purchase_amount` - The purchase amount in SOL lamports",
+        "* `fiat_amount` - The fiat payment amount in Indonesian Rupiah (IDR)",
+        "* `redeem_token_amount` - Optional amount of tokens to redeem as payment",
         "* `transaction_id` - Unique identifier for this transaction (32 bytes)",
         "",
         "# Returns",
@@ -473,7 +363,14 @@
         {
           "name": "customer_token_account",
           "docs": [
-            "The customer's token account that will receive the reward tokens"
+            "The customer's token account that will receive the reward tokens and source for redemption"
+          ],
+          "writable": true
+        },
+        {
+          "name": "merchant_token_account",
+          "docs": [
+            "The merchant's token account (required when redeeming tokens, otherwise can be any account)"
           ],
           "writable": true
         },
@@ -529,162 +426,14 @@
       ],
       "args": [
         {
-          "name": "purchase_amount",
+          "name": "fiat_amount",
           "type": "u64"
         },
         {
-          "name": "transaction_id",
+          "name": "redeem_token_amount",
           "type": {
-            "array": [
-              "u8",
-              32
-            ]
+            "option": "u64"
           }
-        }
-      ]
-    },
-    {
-      "name": "redeem_tokens",
-      "docs": [
-        "Redeem Lokal tokens at a merchant for discounts or payments",
-        "This instruction handles the spending side of the loyalty program",
-        "",
-        "# Arguments",
-        "* `ctx` - The instruction context containing required accounts",
-        "* `token_amount` - The amount of tokens to redeem (in smallest unit, considering 9 decimals)",
-        "* `fiat_value` - The fiat value of the purchase in lamports equivalent",
-        "* `discount_rate` - The discount percentage in basis points (e.g., 1000 = 10%)",
-        "* `transaction_id` - Unique identifier for this transaction (32 bytes)",
-        "",
-        "# Returns",
-        "* `Result<()>` - Success or error result"
-      ],
-      "discriminator": [
-        246,
-        98,
-        134,
-        41,
-        152,
-        33,
-        120,
-        69
-      ],
-      "accounts": [
-        {
-          "name": "customer",
-          "docs": [
-            "The customer redeeming tokens"
-          ],
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "customer_token_account",
-          "docs": [
-            "The customer's token account"
-          ],
-          "writable": true
-        },
-        {
-          "name": "merchant_account",
-          "docs": [
-            "The merchant account where tokens are being redeemed"
-          ],
-          "writable": true
-        },
-        {
-          "name": "merchant_token_account",
-          "docs": [
-            "The merchant's token account (receives the redeemed tokens)"
-          ],
-          "writable": true
-        },
-        {
-          "name": "config",
-          "docs": [
-            "Configuration account containing mint settings"
-          ],
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  111,
-                  110,
-                  102,
-                  105,
-                  103
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "name": "redemption_record",
-          "docs": [
-            "Redemption record for tracking"
-          ],
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  114,
-                  101,
-                  100,
-                  101,
-                  109,
-                  112,
-                  116,
-                  105,
-                  111,
-                  110
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "customer"
-              },
-              {
-                "kind": "account",
-                "path": "merchant_account"
-              },
-              {
-                "kind": "arg",
-                "path": "transaction_id"
-              }
-            ]
-          }
-        },
-        {
-          "name": "token_program",
-          "docs": [
-            "SPL Token program for transfer operations"
-          ],
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        },
-        {
-          "name": "system_program",
-          "docs": [
-            "System program required for account creation"
-          ],
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": [
-        {
-          "name": "token_amount",
-          "type": "u64"
-        },
-        {
-          "name": "fiat_value",
-          "type": "u64"
-        },
-        {
-          "name": "discount_rate",
-          "type": "u16"
         },
         {
           "name": "transaction_id",
@@ -1038,19 +787,6 @@
       ]
     },
     {
-      "name": "TokenRedemption",
-      "discriminator": [
-        116,
-        31,
-        235,
-        253,
-        162,
-        204,
-        183,
-        23
-      ]
-    },
-    {
       "name": "TokenTransfer",
       "discriminator": [
         190,
@@ -1309,7 +1045,7 @@
           {
             "name": "total_volume",
             "docs": [
-              "Total purchase volume (in SOL lamports) processed"
+              "Total purchase volume (in Indonesian Rupiah IDR) processed"
             ],
             "type": "u64"
           },
@@ -1346,7 +1082,7 @@
       "name": "PurchaseTransaction",
       "docs": [
         "Purchase transaction record for tracking and analytics",
-        "This account stores details of each purchase transaction"
+        "This account stores details of each purchase transaction including token redemptions"
       ],
       "type": {
         "kind": "struct",
@@ -1366,9 +1102,23 @@
             "type": "pubkey"
           },
           {
-            "name": "purchase_amount",
+            "name": "fiat_amount",
             "docs": [
-              "Purchase amount in SOL lamports"
+              "Fiat purchase amount in Indonesian Rupiah (IDR)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "redeemed_token_amount",
+            "docs": [
+              "Amount of tokens redeemed as payment (0 if none)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "total_value",
+            "docs": [
+              "Total transaction value (fiat + token value in IDR)"
             ],
             "type": "u64"
           },
@@ -1385,6 +1135,13 @@
               "Cashback rate applied (in basis points)"
             ],
             "type": "u16"
+          },
+          {
+            "name": "used_tokens",
+            "docs": [
+              "Whether tokens were used in this transaction"
+            ],
+            "type": "bool"
           },
           {
             "name": "timestamp",
@@ -1421,91 +1178,6 @@
               "array": [
                 "u8",
                 16
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "TokenRedemption",
-      "docs": [
-        "Token redemption record for tracking spending at merchants",
-        "This account stores details when customers spend Lokal tokens at merchants"
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "customer",
-            "docs": [
-              "The customer who redeemed tokens"
-            ],
-            "type": "pubkey"
-          },
-          {
-            "name": "merchant",
-            "docs": [
-              "The merchant where tokens were redeemed"
-            ],
-            "type": "pubkey"
-          },
-          {
-            "name": "token_amount",
-            "docs": [
-              "Amount of tokens redeemed"
-            ],
-            "type": "u64"
-          },
-          {
-            "name": "fiat_value",
-            "docs": [
-              "Fiat value of the redemption (in lamports for calculation)"
-            ],
-            "type": "u64"
-          },
-          {
-            "name": "discount_rate",
-            "docs": [
-              "Discount percentage applied (in basis points)"
-            ],
-            "type": "u16"
-          },
-          {
-            "name": "timestamp",
-            "docs": [
-              "Timestamp of the redemption"
-            ],
-            "type": "i64"
-          },
-          {
-            "name": "transaction_id",
-            "docs": [
-              "Redemption transaction signature for reference"
-            ],
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
-          {
-            "name": "bump",
-            "docs": [
-              "The bump seed for this redemption account's PDA"
-            ],
-            "type": "u8"
-          },
-          {
-            "name": "reserved",
-            "docs": [
-              "Reserved space for future upgrades (32 bytes)"
-            ],
-            "type": {
-              "array": [
-                "u8",
-                32
               ]
             }
           }
