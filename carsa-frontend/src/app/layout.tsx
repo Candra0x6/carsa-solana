@@ -4,7 +4,7 @@ import "./globals.css";
 import "@solana/wallet-adapter-react-ui/styles.css";
 import { WalletContextProvider } from "@/components/WalletContextProvider";
 import { AuthProvider } from "@/components/AuthProvider";
-import { Navbar } from "@/components/Navbar";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,8 +17,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Carsa Loyalty Program",
-  description: "Decentralized loyalty program on Solana with cashback rewards and token management",
+  title: "Carsa - Hyperlocal Community Currency & Loyalty Program",
+  description: "A mobile-first loyalty app that rewards you with Lokal tokens for supporting local merchants. Powered by Solana blockchain.",
 };
 
 export default function RootLayout({
@@ -33,10 +33,7 @@ export default function RootLayout({
       >
         <AuthProvider>
           <WalletContextProvider>
-            <Navbar />
-            <main className="min-h-screen">
-              {children}
-            </main>
+            {children}
           </WalletContextProvider>
         </AuthProvider>
       </body>

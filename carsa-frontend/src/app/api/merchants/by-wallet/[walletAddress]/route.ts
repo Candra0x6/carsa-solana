@@ -30,7 +30,7 @@ export async function GET(
   { params }: { params: { walletAddress: string } }
 ): Promise<NextResponse<GetMerchantByWalletResponse>> {
   try {
-    const { walletAddress } = params;
+    const { walletAddress } = await params;
 
     if (!walletAddress) {
       return NextResponse.json({
