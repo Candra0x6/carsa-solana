@@ -14,6 +14,7 @@ export interface Merchant {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  qrCodeUrl?: string;
 }
 
 export interface RegisterMerchantForm {

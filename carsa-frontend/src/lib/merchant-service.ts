@@ -1,4 +1,4 @@
-import { PublicKey } from '@solana/web3.js';
+import { PublicKey, Keypair, Transaction, VersionedTransaction } from '@solana/web3.js';
 import { ClientAnchorClient } from './client-anchor';
 import { getConnection } from './solana';
 
@@ -20,7 +20,7 @@ export interface MerchantData {
   // Blockchain data
   onChainData?: {
     exists: boolean;
-    accountInfo?: any;
+    accountInfo?: unknown;
   };
 }
 
@@ -39,11 +39,13 @@ export class MerchantDataService implements MerchantService {
     try {
       const publicKey = new PublicKey(walletAddress);
       
-      // Create a mock wallet for the ClientAnchorClient
+      // Create a mock wallet for the ClientAnchorClient - only used for reading data
+      const dummyKeypair = Keypair.generate(); // Won't be used for signing
       const mockWallet = {
         publicKey: publicKey,
-        signTransaction: async (tx: any) => tx,
-        signAllTransactions: async (txs: any[]) => txs,
+        payer: dummyKeypair,
+        signTransaction: async <T extends Transaction | VersionedTransaction>(tx: T): Promise<T> => tx,
+        signAllTransactions: async <T extends Transaction | VersionedTransaction>(txs: T[]): Promise<T[]> => txs,
       };
 
       const client = new ClientAnchorClient({
@@ -59,8 +61,9 @@ export class MerchantDataService implements MerchantService {
       }
 
       // Fetch database data
-      const dbData = await this.fetchMerchantFromDatabase(walletAddress);
-      
+      const a = await this.fetchMerchantFromDatabase(walletAddress);
+      const dbData = a?.data;
+      console.log('DB Data:', dbData);
       // Combine blockchain and database data
       return {
         id: dbData?.id,
@@ -118,7 +121,7 @@ export class MerchantDataService implements MerchantService {
       
       // For each merchant, also fetch blockchain data
       const enrichedMerchants = await Promise.all(
-        merchants.map(async (merchant: any) => {
+        merchants.map(async (merchant: MerchantData) => {
           const onChainData = await this.getOnChainData(merchant.walletAddress);
           return {
             ...merchant,
@@ -140,10 +143,12 @@ export class MerchantDataService implements MerchantService {
   private async getOnChainData(walletAddress: string) {
     try {
       const publicKey = new PublicKey(walletAddress);
+      const dummyKeypair = Keypair.generate(); // Won't be used for signing
       const mockWallet = {
         publicKey: publicKey,
-        signTransaction: async (tx: any) => tx,
-        signAllTransactions: async (txs: any[]) => txs,
+        payer: dummyKeypair,
+        signTransaction: async <T extends Transaction | VersionedTransaction>(tx: T): Promise<T> => tx,
+        signAllTransactions: async <T extends Transaction | VersionedTransaction>(txs: T[]): Promise<T[]> => txs,
       };
 
       const client = new ClientAnchorClient({
@@ -170,10 +175,12 @@ export class MerchantDataService implements MerchantService {
   async walletHasMerchant(walletAddress: string): Promise<boolean> {
     try {
       const publicKey = new PublicKey(walletAddress);
+      const dummyKeypair = Keypair.generate(); // Won't be used for signing
       const mockWallet = {
         publicKey: publicKey,
-        signTransaction: async (tx: any) => tx,
-        signAllTransactions: async (txs: any[]) => txs,
+        payer: dummyKeypair,
+        signTransaction: async <T extends Transaction | VersionedTransaction>(tx: T): Promise<T> => tx,
+        signAllTransactions: async <T extends Transaction | VersionedTransaction>(txs: T[]): Promise<T[]> => txs,
       };
 
       const client = new ClientAnchorClient({

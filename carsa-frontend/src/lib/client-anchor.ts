@@ -348,6 +348,26 @@ export class ClientAnchorClient {
   }
 
   /**
+   * Redeem LOKAL tokens at a merchant for discount
+   */
+  async redeemTokens(params: {
+    merchantWalletAddress: string;
+    tokenAmount: number;
+    fiatValue: number;
+    discountRate: number;
+    transactionId: Uint8Array;
+  }): Promise<string> {
+    // For redemption, we process a purchase with redeemed tokens
+    // The fiatValue represents the discounted amount to be paid
+    return this.processPurchaseWithRedemption({
+      merchantWalletAddress: params.merchantWalletAddress,
+      fiatAmount: params.fiatValue,
+      redeemTokenAmount: params.tokenAmount,
+      transactionId: params.transactionId,
+    });
+  }
+
+  /**
    * Update merchant settings (cashback rate, active status)
    * Only the merchant owner can update their settings
    */
