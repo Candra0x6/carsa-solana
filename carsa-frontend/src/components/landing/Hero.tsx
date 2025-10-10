@@ -2,10 +2,11 @@
 
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import Image from "next/image"
 
 export function Hero() {
   return (
-    <section className="pt-10 md:pt-16">
+    <section className="pt-10 md:pt-20">
       <div className="mx-auto max-w-6xl px-4">
         <Card variant="surface" className="p-6 md:p-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
@@ -47,12 +48,7 @@ export function Hero() {
                 {/* Hero illustration placeholder */}
                 <div className="w-full h-full rounded-2xl bg-gradient-to-br from-[#7c5aff]/20 to-[#6c47ff]/20 border border-white/10 flex items-center justify-center">
                   <div className="text-center">
-                    <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-[#7c5aff] to-[#6c47ff] flex items-center justify-center">
-                      <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                      </svg>
-                    </div>
-                    <p className="text-white/60 text-sm">Hero App Mockup</p>
+                    <Image src={"/illustration.png"} alt="Hero Illustration" layout="fill" objectFit="cover" className="rounded-2xl"/>
                   </div>
                 </div>
               </div>

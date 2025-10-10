@@ -55,7 +55,7 @@ export function HowItWorks() {
                 {step.step}
               </div>
               
-              <div className="mb-4 text-white/80">
+              <div className="mb-4 text-white/80 flex w-full justify-center">
                 {step.icon}
               </div>
               
@@ -69,7 +69,7 @@ export function HowItWorks() {
               
               {/* Connecting line (hidden on last item) */}
               {index < steps.length - 1 && (
-                <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-px bg-white/20 transform -translate-y-1/2" />
+                <div className="hidden md:block absolute top-1/2 -right-8 w-8 h-px bg-white/20 transform -translate-y-1/2" />
               )}
             </Card>
           ))}
