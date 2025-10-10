@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabaseService } from '@/lib/database-service';
+import { MerchantCategory } from '@/generated/prisma';
 
 export interface SyncTransactionRequest {
   txSignature: string;
@@ -39,6 +40,47 @@ export interface SyncTransactionResponse {
     txSignature: string;
   };
   error?: string;
+}
+
+/**
+ * Map category string to MerchantCategory enum
+ */
+function mapCategoryToEnum(category: string): MerchantCategory {
+  const categoryMap: Record<string, MerchantCategory> = {
+    'Food & Beverage': MerchantCategory.FOOD_BEVERAGE,
+    'Restaurant': MerchantCategory.FOOD_BEVERAGE,
+    'Coffee Shop': MerchantCategory.FOOD_BEVERAGE,
+    'Retail': MerchantCategory.RETAIL,
+    'Store': MerchantCategory.RETAIL,
+    'Shop': MerchantCategory.RETAIL,
+    'Services': MerchantCategory.SERVICES,
+    'Entertainment': MerchantCategory.ENTERTAINMENT,
+    'Health & Beauty': MerchantCategory.HEALTH_BEAUTY,
+    'Salon': MerchantCategory.HEALTH_BEAUTY,
+    'Spa': MerchantCategory.HEALTH_BEAUTY,
+    'Education': MerchantCategory.EDUCATION,
+    'Transportation': MerchantCategory.TRANSPORTATION,
+    'Accommodation': MerchantCategory.ACCOMMODATION,
+    'Hotel': MerchantCategory.ACCOMMODATION,
+    'Other': MerchantCategory.OTHER
+  };
+
+  // Try exact match first
+  if (categoryMap[category]) {
+    return categoryMap[category];
+  }
+
+  // Try case-insensitive match
+  const normalizedCategory = Object.keys(categoryMap).find(
+    key => key.toLowerCase() === category.toLowerCase()
+  );
+  
+  if (normalizedCategory) {
+    return categoryMap[normalizedCategory];
+  }
+
+  // Default to OTHER if no match found
+  return MerchantCategory.OTHER;
 }
 
 /**
@@ -86,7 +128,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<SyncTrans
             txSignature: body.txSignature,
             walletAddress: body.metadata.walletAddress,
             name: body.metadata.name,
-            category: body.metadata.category,
+            category: mapCategoryToEnum(body.metadata.category),
             cashbackRate: body.metadata.cashbackRate || 500, // Default 5%
             email: body.metadata.email,
             phone: body.metadata.phone,

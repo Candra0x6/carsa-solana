@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabaseService } from '@/lib/database-service';
 
-export interface GetMerchantByWalletResponse {
+export interface GetMerchantByIdResponse {
   success: boolean;
   data?: {
     id: string;
@@ -10,8 +10,8 @@ export interface GetMerchantByWalletResponse {
     cashbackRate: number;
     email?: string;
     phone?: string;
-    addressLine1: string;
-    city: string;
+    addressLine1?: string;
+    city?: string;
     walletAddress: string;
     isActive: boolean;
     createdAt: string;
@@ -22,27 +22,27 @@ export interface GetMerchantByWalletResponse {
 }
 
 /**
- * GET /api/merchants/by-wallet/[walletAddress]
- * Get merchant data by wallet address
+ * GET /api/merchants/[id]
+ * Get merchant by ID
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ walletAddress: string }> }
-): Promise<NextResponse<GetMerchantByWalletResponse>> {
+  { params }: { params: Promise<{ id: string }> }
+): Promise<NextResponse<GetMerchantByIdResponse>> {
   try {
-    const { walletAddress } = await params;
-    console.log('GET /api/merchants/by-wallet:', walletAddress);
-    if (!walletAddress) {
+    const { id } = await params;
+
+    if (!id) {
       return NextResponse.json({
         success: false,
-        error: 'Wallet address is required'
+        error: 'Merchant ID is required'
       }, { status: 400 });
     }
 
     const dbService = getDatabaseService();
     
-    // Find merchant by wallet address
-    const merchant = await dbService.getMerchantByWallet(walletAddress);
+    // Get merchant by ID from database
+    const merchant = await dbService.getMerchant(id);
 
     if (!merchant) {
       return NextResponse.json({
@@ -60,8 +60,8 @@ export async function GET(
         cashbackRate: merchant.cashback_rate,
         email: merchant.email || undefined,
         phone: merchant.phone || undefined,
-        addressLine1: merchant.address_line_1,
-        city: merchant.city,
+        addressLine1: merchant.address_line_1 || undefined,
+        city: merchant.city || undefined,
         walletAddress: merchant.wallet_address,
         isActive: merchant.is_active,
         createdAt: merchant.created_at.toISOString(),
@@ -71,7 +71,7 @@ export async function GET(
     });
 
   } catch (error) {
-    console.error('Error in GET /api/merchants/by-wallet:', error);
+    console.error('Error in GET /api/merchants/[id]:', error);
     return NextResponse.json({
       success: false,
       error: 'Internal server error'
