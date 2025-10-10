@@ -4,6 +4,7 @@ import "./globals.css";
 import "@solana/wallet-adapter-react-ui/styles.css";
 import { WalletContextProvider } from "@/components/WalletContextProvider";
 import { AuthProvider } from "@/components/AuthProvider";
+import { Navbar } from "@/components/Navbar";
 
 
 const geistSans = Geist({
@@ -29,11 +30,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#0a0a0b] min-h-screen`}
       >
         <AuthProvider>
           <WalletContextProvider>
-            {children}
+            <Navbar />
+            <main className="">
+              {children}
+            </main>
           </WalletContextProvider>
         </AuthProvider>
       </body>

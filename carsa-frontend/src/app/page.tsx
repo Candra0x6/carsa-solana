@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import { Header } from "@/components/landing/header"
 import { Hero } from "@/components/landing/Hero"
 import { ValueProps } from "@/components/landing/value-props"
 import { HowItWorks } from "@/components/landing/how-it-works"
@@ -88,7 +87,6 @@ export default function Home() {
       />
       
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
-        <Header />
         
         <main className="pb-20 md:pb-0">
           <Hero />
