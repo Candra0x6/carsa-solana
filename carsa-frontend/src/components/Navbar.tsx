@@ -1,11 +1,14 @@
 'use client';
 
 import { FC, useState, useEffect, useCallback, useRef } from 'react';
-import { useWallet } from '@solana/wallet-adapter-react';
-import { WalletMultiButton, WalletDisconnectButton } from '@solana/wallet-adapter-react-ui';
+import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+import { WalletMultiButton, WalletDisconnectButton, BaseWalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { ClientAnchorClient } from '@/lib/client-anchor';
 import Link from 'next/link';
 import * as anchor from '@coral-xyz/anchor';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import Image from 'next/image';
 
 interface NavbarProps {
   className?: string;
@@ -18,7 +21,7 @@ export const Navbar: FC<NavbarProps> = ({ className = '' }) => {
   const [showBalance, setShowBalance] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
+  const {disconnect, connect} = useWallet()
   // Fetch LOKAL token balance when wallet is connected
   const fetchBalance = useCallback(async () => {
     if (!connected || !publicKey || !wallet) {
@@ -83,145 +86,213 @@ export const Navbar: FC<NavbarProps> = ({ className = '' }) => {
   }, [showBalance]);
 
   return (
-    <nav className={`bg-white shadow-sm border-b border-gray-200 ${className}`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav className={` fixed top-0 left-0 right-0 z-50 ${className}`}>
+      <div className="mx-auto max-w-6xl px-4 rounded-[99px] backdrop-blur-2xl">
         <div className="flex justify-between items-center h-16">
           {/* Logo/Brand */}
           <div className="flex items-center">
-            <Link href="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">C</span>
-              </div>
-              <span className="text-xl font-bold text-gray-900">Carsa</span>
+            <Link href="/" className="flex items-center gap-3 group">
+              <Image src={"/carsa.png"} alt="Carsa Logo" width={40} height={40} className='rounded-xl' />
+              <span className="text-xl font-bold text-white group-hover:text-purple-300 transition-colors">Carsa</span>
             </Link>
           </div>
 
           {/* Navigation Links */}
-          <div className="hidden md:flex items-center space-x-8">
-            <Link href="/" className="text-gray-600 hover:text-gray-900 transition-colors">
+          <div className="hidden md:flex items-center gap-1">
+            <Link 
+              href="/" 
+              className="px-4 py-2 text-white/80 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-200 font-medium"
+            >
               Home
             </Link>
-            <Link href="/merchant" className="text-gray-600 hover:text-gray-900 transition-colors">
+            <Link 
+              href="/merchants" 
+              className="px-4 py-2 text-white/80 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-200 font-medium"
+            >
               Merchants
             </Link>
-            <Link href="/dashboard" className="text-gray-600 hover:text-gray-900 transition-colors">
+            <Link 
+              href="/scanner" 
+              className="px-4 py-2 text-white/80 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-200 font-medium"
+            >
+              Scanner
+            </Link>
+            <Link 
+              href="/dashboard" 
+              className="px-4 py-2 text-white/80 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-200 font-medium"
+            >
               Dashboard
             </Link>
           </div>
 
           {/* Wallet Connection Section */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center gap-3">
             {connected && publicKey ? (
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center gap-3">
                 {/* LOKAL Balance Button */}
                 <button
                   onClick={toggleBalanceDisplay}
                   disabled={loading}
-                  className="flex items-center space-x-2 bg-purple-50 hover:bg-purple-100 text-purple-700 px-3 py-2 rounded-lg border border-purple-200 transition-colors duration-200 disabled:opacity-50"
+                  className="flex items-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl transition-all duration-200 disabled:opacity-50 group"
                 >
                   {loading ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600"></div>
+                    <svg className="w-4 h-4 animate-spin text-purple-400" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                      <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                    </svg>
                   ) : (
-                    <span className="text-sm font-medium">💰</span>
+                    <div className="w-4 h-4 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                      <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 8 8">
+                        <circle cx="4" cy="4" r="3"/>
+                      </svg>
+                    </div>
                   )}
                   <span className="text-sm font-medium">
-                    {loading ? 'Loading...' : 'LOKAL Balance'}
+                    {loading ? 'Loading...' : 'LOKAL'}
                   </span>
+                  <svg className="w-3 h-3 text-white/60 group-hover:text-white/80 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
                 </button>
 
-                {/* Wallet Address (abbreviated) */}
-                <div className="hidden sm:flex items-center space-x-2 bg-gray-50 px-3 py-2 rounded-lg">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-sm text-gray-600 font-mono">
-                    {publicKey.toBase58().slice(0, 4)}...{publicKey.toBase58().slice(-4)}
-                  </span>
-                </div>
+            
+                                <WalletMultiButton />
 
-                {/* Disconnect Button */}
-                <WalletDisconnectButton className="!bg-red-100 !text-red-700 hover:!bg-red-200 !border-red-200 !rounded-lg !px-3 !py-2 !text-sm !font-medium !transition-colors !duration-200" />
               </div>
             ) : (
               /* Connect Wallet Button */
-              <WalletMultiButton className="!bg-purple-600 hover:!bg-purple-700 !rounded-lg !font-semibold !px-4 !py-2 !text-white !transition-colors !duration-200" />
+              <div className="flex items-center gap-2">
+                <WalletMultiButton />
+                
+                {/* Hidden wallet button for functionality */}
+                <div className="hidden">
+                  <WalletMultiButton />
+                </div>
+              </div>
             )}
           </div>
         </div>
 
         {/* Balance Display Dropdown */}
         {connected && showBalance && (
-          <div ref={dropdownRef} className="absolute right-4 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-            <div className="p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-lg font-semibold text-gray-900">LOKAL Token Balance</h3>
-                <button
+          <div ref={dropdownRef} className="absolute right-4 top-full mt-2 w-80 z-50">
+            <Card variant="surface" className="p-6 shadow-2xl shadow-black/50 border-white/20">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.51-1.31c-.562-.649-1.413-1.076-2.353-1.253V5z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-bold text-white">LOKAL Balance</h3>
+                </div>
+                <Button
                   onClick={() => setShowBalance(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  variant="ghost-pill"
+                  className="!p-2 !min-w-0"
                 >
-                  ✕
-                </button>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </Button>
               </div>
               
               {error ? (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                  <p className="text-red-800 text-sm">{error}</p>
-                  <button
-                    onClick={refreshBalance}
-                    className="mt-2 text-red-600 hover:text-red-800 text-sm font-medium"
-                  >
-                    Try Again
-                  </button>
+                <div className="p-4 bg-red-500/10 border border-red-400/20 rounded-xl">
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 bg-red-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <svg className="w-3 h-3 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-red-300 text-sm">{error}</p>
+                      <Button
+                        onClick={refreshBalance}
+                        variant="ghost-pill"
+                        className="mt-2 !text-red-300 !border-red-400/20 hover:!bg-red-500/20"
+                      >
+                        Try Again
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               ) : balance ? (
-                <div className="space-y-3">
-                  <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-purple-600 font-medium">Balance</span>
-                      <button
+                <div className="space-y-4">
+                  <div className="p-4 bg-white/5 border border-white/10 rounded-xl">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-sm text-gray-300 font-medium">Current Balance</span>
+                      <Button
                         onClick={refreshBalance}
                         disabled={loading}
-                        className="text-purple-600 hover:text-purple-800 text-sm disabled:opacity-50"
+                        variant="ghost-pill"
+                        className="!p-2 !min-w-0"
                       >
-                        🔄
-                      </button>
+                        {loading ? (
+                          <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                            <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                          </svg>
+                        ) : (
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                          </svg>
+                        )}
+                      </Button>
                     </div>
-                    <p className="text-2xl font-bold text-purple-900 mt-1">
+                    <p className="text-2xl font-bold text-white mb-1">
                       {balance.balance} LOKAL
                     </p>
-                    <p className="text-sm text-purple-600 mt-1">
+                    <p className="text-sm text-gray-400">
                       {balance.balanceNumber.toLocaleString()} tokens
                     </p>
                   </div>
                   
-                  <div className="bg-gray-50 rounded-lg p-3">
+                  <div className="p-3 bg-white/5 border border-white/10 rounded-xl">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600">Account Status</span>
-                      <span className={`font-medium ${balance.exists ? 'text-green-600' : 'text-yellow-600'}`}>
+                      <span className="text-gray-300">Account Status</span>
+                      <span className={`font-medium flex items-center gap-1 ${
+                        balance.exists ? 'text-green-400' : 'text-yellow-400'
+                      }`}>
+                        <div className={`w-2 h-2 rounded-full ${
+                          balance.exists ? 'bg-green-400' : 'bg-yellow-400'
+                        }`} />
                         {balance.exists ? 'Active' : 'Not Created'}
                       </span>
                     </div>
                     {!balance.exists && (
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-gray-400 mt-2">
                         Token account will be created when you receive your first LOKAL tokens
                       </p>
                     )}
                   </div>
                 </div>
               ) : loading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                <div className="flex flex-col items-center justify-center py-8">
+                  <svg className="w-8 h-8 animate-spin text-purple-400 mb-3" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                  </svg>
+                  <p className="text-gray-400 text-sm">Loading balance...</p>
                 </div>
               ) : (
-                <div className="bg-gray-50 rounded-lg p-4 text-center">
-                  <p className="text-gray-600 text-sm">No balance data available</p>
-                  <button
+                <div className="p-4 bg-white/5 border border-white/10 rounded-xl text-center">
+                  <div className="w-12 h-12 mx-auto mb-3 bg-gray-500/20 rounded-xl flex items-center justify-center">
+                    <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <p className="text-gray-300 text-sm mb-3">No balance data available</p>
+                  <Button
                     onClick={refreshBalance}
-                    className="mt-2 text-purple-600 hover:text-purple-800 text-sm font-medium"
+                    variant="ghost-pill"
                   >
                     Load Balance
-                  </button>
+                  </Button>
                 </div>
               )}
-            </div>
+            </Card>
           </div>
         )}
       </div>
