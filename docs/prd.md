@@ -100,9 +100,9 @@
 
 ❌ **Out-of-Scope (Future versions)**
 
-* Non-custodial UX (Phantom/Solflare fully integrated).
-* Fiat on/off ramps (e.g. Rupiah integration).
 * Cross-city expansion (focus on Bandung demo).
 * Advanced merchant analytics & dashboards.
 * Complex tokenomics (staking, yield farming).
 * Full regulatory compliance stack.
+* Fiat on/off ramps (e.g. Rupiah integration).
+* Non-custodial UX (Phantom/Solflare fully integrated).
