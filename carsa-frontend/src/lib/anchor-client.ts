@@ -2,7 +2,6 @@ import * as anchor from '@coral-xyz/anchor';
 import { Connection, PublicKey, Keypair, Transaction, VersionedTransaction, SystemProgram } from '@solana/web3.js';
 import { AnchorProvider, Program, BN, Idl } from '@coral-xyz/anchor';
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, createAssociatedTokenAccountInstruction } from '@solana/spl-token';
-import { Carsa } from '../../../carsa-contracts/target/types/carsa';
 import { 
   getConnection, 
   getMerchantPDA, 
