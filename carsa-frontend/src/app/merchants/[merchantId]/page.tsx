@@ -25,7 +25,7 @@ interface MerchantDetails {
   updatedAt: string;
   qrCodeUrl?: string;
 }
-
+  
 const CATEGORY_ICONS: Record<string, string> = {
   'FOOD_BEVERAGE': '🍽️',
   'RETAIL': '🛍️',

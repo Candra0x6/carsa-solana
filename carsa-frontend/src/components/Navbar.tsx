@@ -21,7 +21,7 @@ export const Navbar: FC<NavbarProps> = ({ className = '' }) => {
   const [showBalance, setShowBalance] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const {disconnect, connect} = useWallet()
+  const { disconnect, connect } = useWallet()
   // Fetch LOKAL token balance when wallet is connected
   const fetchBalance = useCallback(async () => {
     if (!connected || !publicKey || !wallet) {
@@ -33,8 +33,8 @@ export const Navbar: FC<NavbarProps> = ({ className = '' }) => {
     setError(null);
 
     try {
-      const client = new ClientAnchorClient({ 
-        wallet: wallet.adapter as unknown as anchor.Wallet 
+      const client = new ClientAnchorClient({
+        wallet: wallet.adapter as unknown as anchor.Wallet
       });
       const balanceInfo = await client.getFormattedLokalBalance();
       setBalance(balanceInfo);
@@ -99,34 +99,34 @@ export const Navbar: FC<NavbarProps> = ({ className = '' }) => {
 
           {/* Navigation Links */}
           <div className="hidden md:flex items-center gap-1">
-            <Link 
-              href="/" 
+            <Link
+              href="/"
               className="px-4 py-2 text-white/80 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-200 font-medium"
             >
               Home
             </Link>
-            <Link 
-              href="/merchants" 
+            <Link
+              href="/merchants"
               className="px-4 py-2 text-white/80 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-200 font-medium"
             >
               Merchants
             </Link>
-            <Link 
-              href="/rank" 
+            <Link
+              href="/rank"
               className="px-4 py-2 text-white/80 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-200 font-medium"
             >
               Rank
             </Link>
 
-            <Link 
-              href="/staking" 
+            <Link
+              href="/staking"
               className="px-4 py-2 text-white/80 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-200 font-medium"
             >
               Staking
             </Link>
-   
-            <Link 
-              href="/dashboard" 
+
+            <Link
+              href="/dashboard"
               className="px-4 py-2 text-white/80 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-200 font-medium"
             >
               Dashboard
@@ -145,13 +145,13 @@ export const Navbar: FC<NavbarProps> = ({ className = '' }) => {
                 >
                   {loading ? (
                     <svg className="w-4 h-4 animate-spin text-purple-400" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                      <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
                   ) : (
                     <div className="w-4 h-4 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
                       <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 8 8">
-                        <circle cx="4" cy="4" r="3"/>
+                        <circle cx="4" cy="4" r="3" />
                       </svg>
                     </div>
                   )}
@@ -163,15 +163,15 @@ export const Navbar: FC<NavbarProps> = ({ className = '' }) => {
                   </svg>
                 </button>
 
-            
-                                <WalletMultiButton />
+
+                <WalletMultiButton />
 
               </div>
             ) : (
               /* Connect Wallet Button */
               <div className="flex items-center gap-2">
                 <WalletMultiButton />
-                
+
                 {/* Hidden wallet button for functionality */}
                 <div className="hidden">
                   <WalletMultiButton />
@@ -205,7 +205,7 @@ export const Navbar: FC<NavbarProps> = ({ className = '' }) => {
                   </svg>
                 </Button>
               </div>
-              
+
               {error ? (
                 <div className="p-4 bg-red-500/10 border border-red-400/20 rounded-xl">
                   <div className="flex items-start gap-3">
@@ -239,8 +239,8 @@ export const Navbar: FC<NavbarProps> = ({ className = '' }) => {
                       >
                         {loading ? (
                           <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                            <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                           </svg>
                         ) : (
                           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -256,16 +256,14 @@ export const Navbar: FC<NavbarProps> = ({ className = '' }) => {
                       {balance.balanceNumber.toLocaleString()} tokens
                     </p>
                   </div>
-                  
+
                   <div className="p-3 bg-white/5 border border-white/10 rounded-xl">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-300">Account Status</span>
-                      <span className={`font-medium flex items-center gap-1 ${
-                        balance.exists ? 'text-green-400' : 'text-yellow-400'
-                      }`}>
-                        <div className={`w-2 h-2 rounded-full ${
-                          balance.exists ? 'bg-green-400' : 'bg-yellow-400'
-                        }`} />
+                      <span className={`font-medium flex items-center gap-1 ${balance.exists ? 'text-green-400' : 'text-yellow-400'
+                        }`}>
+                        <div className={`w-2 h-2 rounded-full ${balance.exists ? 'bg-green-400' : 'bg-yellow-400'
+                          }`} />
                         {balance.exists ? 'Active' : 'Not Created'}
                       </span>
                     </div>
@@ -279,8 +277,8 @@ export const Navbar: FC<NavbarProps> = ({ className = '' }) => {
               ) : loading ? (
                 <div className="flex flex-col items-center justify-center py-8">
                   <svg className="w-8 h-8 animate-spin text-purple-400 mb-3" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                    <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
                   <p className="text-gray-400 text-sm">Loading balance...</p>
                 </div>

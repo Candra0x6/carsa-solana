@@ -207,7 +207,7 @@ export class ServerTransactionService {
     error?: string;
   }> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/anchor/register-merchant`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/anchor/register-merchant`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -252,7 +252,7 @@ export class ServerTransactionService {
     error?: string;
   }> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/anchor/process-purchase`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/anchor/process-purchase`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -296,7 +296,7 @@ export class ServerTransactionService {
     error?: string;
   }> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/anchor/update-merchant`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/anchor/update-merchant`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

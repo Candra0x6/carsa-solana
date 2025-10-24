@@ -20,7 +20,7 @@ export async function registerMerchant(
   idempotencyKey?: string
 ): Promise<ApiResponse<MerchantRegistrationResult>> {
   try {
-    const response = await fetch(`${API_BASE_URL}/register-merchant`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/anchor/register-merchant`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -58,7 +58,7 @@ export async function updateMerchant(
   idempotencyKey?: string
 ): Promise<ApiResponse<MerchantUpdateResult>> {
   try {
-    const response = await fetch(`${API_BASE_URL}/update-merchant`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/anchor/update-merchant`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -96,7 +96,7 @@ export async function processPurchase(
   idempotencyKey?: string
 ): Promise<ApiResponse<PurchaseResult>> {
   try {
-    const response = await fetch(`${API_BASE_URL}/process-purchase`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/anchor/process-purchase`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
