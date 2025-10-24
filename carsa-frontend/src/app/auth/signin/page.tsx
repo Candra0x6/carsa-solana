@@ -91,35 +91,10 @@ export default function SignInPage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 pt-14">
       <div className="max-w-md w-full">
         <Card variant="surface" className="p-8">
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-[#7c5aff] to-[#6c47ff] rounded-full flex items-center justify-center">
-              <span className="text-white text-2xl font-bold">C</span>
-            </div>
-            <h2 className="text-2xl font-bold text-white mb-2">
-              Welcome to Carsa
-            </h2>
-            <p className="text-white/70">
-              Choose your authentication method
-            </p>
-          </div>
-
+         
           {/* Tab Selector */}
           <div className="flex bg-white/5 rounded-[99px] p-1 mb-6">
-            <button
-              className={`flex-1 py-3 px-4 text-center font-medium text-sm rounded-[99px] transition-all ${
-                activeTab === 'custodial'
-                  ? 'bg-gradient-to-b from-[#7c5aff] to-[#6c47ff] text-white shadow-[inset_0px_1px_0px_rgba(255,255,255,0.16)]'
-                  : 'text-white/70 hover:text-white hover:bg-white/10'
-              }`}
-              onClick={() => setActiveTab('custodial')}
-            >
-              <span className="flex items-center justify-center gap-2">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-                Custodial
-              </span>
-            </button>
+           
             <button
               className={`flex-1 py-3 px-4 text-center font-medium text-sm rounded-[99px] transition-all ${
                 activeTab === 'wallet'
@@ -335,16 +310,7 @@ export default function SignInPage() {
         )}
 
         </Card>
-        <div className="text-center p-4 bg-gray-800/30 rounded-2xl border border-gray-700/50">
-          <div className="flex items-center justify-center gap-2">
-            <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-            <p className="text-gray-300 text-sm font-medium">
-              Both methods support the same on-chain transactions and features
-            </p>
-          </div>
-        </div>
+    
       </div>
     </div>
   );

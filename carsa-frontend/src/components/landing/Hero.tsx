@@ -12,11 +12,13 @@ export function Hero() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             <div className="max-w-2xl">
               <div className="inline-flex items-center gap-2 px-3 h-8 rounded-[99px] bg-white/5 border border-white/10 text-xs text-white/80 mb-6">
-                <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-gradient-to-br from-[#7c5aff] to-[#6c47ff]">
-                  <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 8 8">
-                    <circle cx="4" cy="4" r="3"/>
-                  </svg>
-                </span>
+                <Image
+                  src="/solana.png"
+                  alt="Solana Logo"
+                  width={16}
+                  height={16}
+                  className="h-4 w-4"
+                />
                 Powered by Solana Blockchain
               </div>
               
@@ -34,11 +36,9 @@ export function Hero() {
               
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                 <Button variant="primary" size="lg" asChild>
-                  <a href="#demo">Get the Demo</a>
+                  <a href="#demo">Get Started </a>
                 </Button>
-                <Button variant="ghost-pill" size="lg" asChild>
-                  <a href="#demo-video">Watch Demo</a>
-                </Button>
+               
               </div>
             </div>
 

@@ -3,8 +3,10 @@
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 
 export function FinalCTA() {
+  const router = useRouter()
   return (
     <section id="demo" className="py-16 md:py-24">
       <div className="mx-auto max-w-4xl px-4">
@@ -23,7 +25,7 @@ export function FinalCTA() {
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button variant="primary" size="lg" className="min-w-[200px]">
+              <Button onClick={() =>router.push("/auth/signin")} variant="primary" size="lg" className="min-w-[200px]">
                 Join the Demo
               </Button>
               <Button variant="ghost-pill" size="lg" className="min-w-[200px]">

@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { Card } from "@/components/ui/card"
+import Image from "next/image"
 
 export function Footer() {
   return (
@@ -12,9 +13,8 @@ export function Footer() {
             {/* Brand */}
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded bg-gradient-to-br from-[#7c5aff] to-[#6c47ff] flex items-center justify-center">
-                  <span className="text-white font-bold">C</span>
-                </div>
+                             <Image src={"/carsa.png"} alt="Carsa Logo" width={40} height={40} className='rounded-xl' />
+               
                 <span className="text-white font-semibold">Carsa</span>
               </div>
               <p className="text-white/70 text-sm">
