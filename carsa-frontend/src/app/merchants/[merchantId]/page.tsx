@@ -52,13 +52,11 @@ const MerchantDetailPage: React.FC = () => {
   const fetchMerchantDetails = useCallback(async () => {
     try {
       setLoading(true);
-      // For now, we'll use the merchants API and find by ID
-      // In a real app, you might have /api/merchants/[id] endpoint
-      const response = await fetch('/api/merchants?limit=100');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/merchants/${merchantId}`);  
       const data = await response.json();
       
       if (data.success && data.data) {
-        const foundMerchant = data.data.merchants.find((m: MerchantDetails) => m.id === merchantId);
+        const foundMerchant = data.data
         if (foundMerchant) {
           setMerchant(foundMerchant);
         } else {

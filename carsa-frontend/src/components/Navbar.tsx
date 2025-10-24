@@ -86,9 +86,9 @@ export const Navbar: FC<NavbarProps> = ({ className = '' }) => {
   }, [showBalance]);
 
   return (
-    <nav className={` fixed top-0 left-0 right-0 z-50 ${className}`}>
-      <div className="mx-auto max-w-6xl px-4 rounded-[99px] backdrop-blur-2xl">
-        <div className="flex justify-between items-center h-16">
+    <nav className={` fixed top-0 left-0 right-0 z-50 ${className} mt-2 `}>
+      <div className="mx-auto max-w-6xl px-4 bg-[#13131676] rounded-[99px] backdrop-blur-2xl ">
+        <div className="flex justify-between items-center h-16 ">
           {/* Logo/Brand */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center gap-3 group">
@@ -112,11 +112,19 @@ export const Navbar: FC<NavbarProps> = ({ className = '' }) => {
               Merchants
             </Link>
             <Link 
-              href="/scanner" 
+              href="/rank" 
               className="px-4 py-2 text-white/80 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-200 font-medium"
             >
-              Scanner
+              Rank
             </Link>
+
+            <Link 
+              href="/staking" 
+              className="px-4 py-2 text-white/80 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-200 font-medium"
+            >
+              Staking
+            </Link>
+   
             <Link 
               href="/dashboard" 
               className="px-4 py-2 text-white/80 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-200 font-medium"

@@ -35,18 +35,10 @@ export class QRService {
    */
   async generateMerchantQR(merchantData: MerchantQRData): Promise<QRGenerationResult> {
     try {
-      // Create QR code data payload
-      const qrPayload = {
-        type: 'merchant_payment',
-        merchantId: merchantData.merchantId,
-        walletAddress: merchantData.walletAddress,
-        name: merchantData.name,
-        cashbackRate: merchantData.cashbackRate,
-        timestamp: new Date().toISOString()
-      };
+      
 
       // Generate QR code as buffer
-      const qrCodeBuffer = await QRCode.toBuffer(JSON.stringify(qrPayload), {
+      const qrCodeBuffer = await QRCode.toBuffer(`${process.env.NEXT_PUBLIC_BASE_URL}/scan/${merchantData.merchantId}`, {
         type: 'png',
         width: 512, // Square 512x512 pixels
         margin: 2,

@@ -1,0 +1,47 @@
+# Systemd Service for Yield Recording
+# 
+# Installation:
+#   1. Copy to /etc/systemd/system/yield-recorder.service
+#   2. Update paths and environment variables
+#   3. sudo systemctl daemon-reload
+#   4. sudo systemctl enable yield-recorder
+#   5. sudo systemctl start yield-recorder
+#
+# Monitoring:
+#   sudo systemctl status yield-recorder
+#   sudo journalctl -u yield-recorder -f
+
+[Unit]
+Description=Carsa Yield Recording Service
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/carsa/carsa-contracts
+Environment="NODE_ENV=production"
+Environment="SOLANA_CLUSTER=mainnet-beta"
+Environment="RPC_URL=https://api.mainnet-beta.solana.com"
+Environment="YIELD_INTERVAL_HOURS=6"
+Environment="APY_BASIS_POINTS=1200"
+Environment="DELEGATE_KEYPAIR_PATH=/home/ubuntu/carsa/delegate-keypair.json"
+
+# Run the service
+ExecStart=/usr/bin/npx ts-node record-yield-service.ts continuous
+
+# Restart policy
+Restart=always
+RestartSec=30
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=yield-recorder
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

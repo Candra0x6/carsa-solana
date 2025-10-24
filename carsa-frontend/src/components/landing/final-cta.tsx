@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import Image from "next/image"
 
 export function FinalCTA() {
   return (
@@ -10,15 +11,15 @@ export function FinalCTA() {
         <Card variant="surface" className="p-8 md:p-12 text-center">
           <div className="max-w-2xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-              Be part of the{" "}
+              Join us in building{" "}
               <span className="bg-gradient-to-r from-[#7c5aff] to-[#6c47ff] bg-clip-text text-transparent">
-                hyperlocal movement
+                the future of local economies
               </span>
             </h2>
             
             <p className="text-lg text-white/70 mb-8 leading-relaxed">
-              Join our demo and experience the future of community loyalty programs. 
-              Start earning and spending Lokal tokens at local businesses today.
+              Carsa transforms local commerce into a self-sustaining, data-driven, and community-owned economy. 
+              From points to productive assets to micro-economies — starting right here in Bandung.
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -37,9 +38,16 @@ export function FinalCTA() {
                   Live on Devnet
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-blue-400"></div>
-                  Powered by Solana
+    <Image
+      src="/solana.png"
+      alt="Solana Logo"
+      width={16}
+      height={16}
+      className="inline-block"
+    />
+                  <span className="text-white/70">Powered by Solana</span>
                 </div>
+                
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-purple-400"></div>
                   Open Source

@@ -126,6 +126,75 @@ pub mod carsa {
     // This provides a unified transaction experience where users can pay with tokens
     // and still earn rewards in a single transaction
 
+    // ============================================================================
+    // Voucher Pool Instructions for Non-Custodial Staking
+    // ============================================================================
+
+    /// Initialize a new voucher staking pool for LOKAL tokens
+    /// Creates the pool state and configures staking parameters
+    /// 
+    /// # Arguments
+    /// * `ctx` - The instruction context containing required accounts
+    /// * `config` - Pool configuration including stake limits and APY
+    /// 
+    /// # Returns
+    /// * `Result<()>` - Success or error result
+    pub fn initialize_pool(ctx: Context<InitializePool>, config: PoolConfig) -> Result<()> {
+        InitializePool::handler(ctx, config)
+    }
+
+    /// Deposit voucher tokens into the staking pool using delegated authority
+    /// The user must have previously approved the pool delegate
+    /// 
+    /// # Arguments
+    /// * `ctx` - The instruction context containing required accounts
+    /// * `amount` - The amount of voucher tokens to stake
+    /// 
+    /// # Returns
+    /// * `Result<()>` - Success or error result
+    pub fn deposit_voucher(ctx: Context<DepositVoucher>, amount: u64) -> Result<()> {
+        DepositVoucher::handler(ctx, amount)
+    }
+
+    /// Record yield earned from staking activities
+    /// Called by the backend after swapping vouchers to SOL and earning yield
+    /// 
+    /// # Arguments
+    /// * `ctx` - The instruction context containing required accounts
+    /// * `sol_amount` - The amount of SOL yield earned
+    /// 
+    /// # Returns
+    /// * `Result<()>` - Success or error result
+    pub fn record_yield(ctx: Context<RecordYield>, sol_amount: u64) -> Result<()> {
+        RecordYield::handler(ctx, sol_amount)
+    }
+
+    /// Redeem staked vouchers and claim earned yield
+    /// Allows users to unstake their tokens and withdraw
+    /// 
+    /// # Arguments
+    /// * `ctx` - The instruction context containing required accounts
+    /// * `amount` - The amount of voucher tokens to redeem
+    /// 
+    /// # Returns
+    /// * `Result<()>` - Success or error result
+    pub fn redeem_voucher(ctx: Context<RedeemVoucher>, amount: u64) -> Result<()> {
+        RedeemVoucher::handler(ctx, amount)
+    }
+
+    /// Update pool configuration settings
+    /// Only the pool authority can perform this operation
+    /// 
+    /// # Arguments
+    /// * `ctx` - The instruction context containing required accounts
+    /// * `new_config` - New pool configuration parameters
+    /// 
+    /// # Returns
+    /// * `Result<()>` - Success or error result
+    pub fn update_pool_config(ctx: Context<UpdatePoolConfig>, new_config: PoolConfig) -> Result<()> {
+        UpdatePoolConfig::handler(ctx, new_config)
+    }
+
     /// Legacy initialize function for backwards compatibility
     /// This will be removed in future versions
     #[deprecated(note = "Use initialize_lokal_mint instead")]

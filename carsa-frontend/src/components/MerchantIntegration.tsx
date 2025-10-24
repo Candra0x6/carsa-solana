@@ -5,6 +5,7 @@
 import React from 'react';
 import PurchaseTransaction from './PurchaseTransaction';
 import { RedeemTokensComponent } from './RedeemTokensComponent';
+import toast from 'react-hot-toast';
 
 interface MerchantIntegrationProps {
   merchantWalletAddress: string;
@@ -15,18 +16,17 @@ export default function MerchantIntegration({
   merchantWalletAddress, 
   merchantName 
 }: MerchantIntegrationProps) {
-  const handlePurchaseSuccess = (signature: string) => {
-    console.log('Purchase completed:', signature);
-    // You could show a success message or update state
-  };
+
 
   const handleRedemptionSuccess = (signature: string) => {
     console.log('Redemption completed:', signature);
+    toast .success('Tokens redeemed successfully!');
     // You could show a success message or update state
   };
 
   const handleError = (error: Error) => {
     console.error('Transaction error:', error);
+    toast.error(`Transaction failed: ${error.message}`);
     // Handle error display
   };
 

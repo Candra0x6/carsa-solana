@@ -161,14 +161,16 @@ export default function MerchantDashboard({ }: MerchantDashboardProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 pt-14 ">
+    <div className="min-h-screen  bg-gradient-to-br from-gray-900 via-black to-gray-900 pt-14 ">
       
+      <div className="mx-auto max-w-6xl">
+
       {/* Header */}
       <div className="">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-8">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
+          <div className="flex justify-center items-center py-8">
+            <div className='text-center'>
+              <h1 className="text-4xl md:text-4xl font-bold text-white mb-2">
                 Merchant <span className="bg-gradient-to-r from-[#7c5aff] to-[#6c47ff] bg-clip-text text-transparent">Dashboard</span>
               </h1>
               <p className="text-gray-300 text-lg">
@@ -380,6 +382,7 @@ export default function MerchantDashboard({ }: MerchantDashboardProps) {
         )}
 
       
+      </div>
       </div>
     </div>
   );

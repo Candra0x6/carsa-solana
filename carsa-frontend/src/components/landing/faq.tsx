@@ -5,28 +5,28 @@ import { Card } from "@/components/ui/card"
 
 const faqs = [
   {
-    question: "What is Lokal?",
-    answer: "Lokal is a community currency built on the Solana blockchain. It's an SPL token that you can earn when shopping at local merchants and spend across participating businesses in your city.",
+    question: "What makes Carsa different from traditional loyalty programs?",
+    answer: "Carsa transforms static points into productive assets. Your Lokal tokens automatically earn yield while idle, build your LocalRank reputation for exclusive benefits, and empower merchants with AI-driven insights. It's loyalty that lives and grows.",
   },
   {
-    question: "Do I need a crypto wallet?",
-    answer: "No! Carsa provides a built-in custodial wallet for simplicity. Your Lokal tokens are stored securely in your account. Advanced users can optionally connect external wallets like Phantom or Solflare.",
+    question: "How do my tokens earn yield?",
+    answer: "Your idle Lokal tokens are automatically staked in the community treasury, which generates yield through DeFi strategies. You earn passive income on your rewards until you spend them — turning dead capital into productive community wealth.",
   },
   {
-    question: "Is it live on Solana mainnet?",
-    answer: "Currently, Carsa runs on Solana Devnet for our MVP demonstration. We're preparing for mainnet launch as we expand our merchant network and complete security audits.",
+    question: "What is LocalRank and why does it matter?",
+    answer: "LocalRank is your reputation score based on loyalty activity. Higher LocalRank unlocks exclusive promos, governance voting rights on treasury allocation, and future access to micro-credit. It's trust made tangible.",
   },
   {
-    question: "How do I earn Lokal tokens?",
-    answer: "Simply shop at participating merchants and scan their QR code with the Carsa app. You'll automatically receive a percentage of your purchase back in Lokal tokens - typically 3-5% depending on the merchant.",
+    question: "Do I need crypto experience to use Carsa?",
+    answer: "No! Carsa offers Web2-like simplicity with a custodial wallet — just sign up and start earning. Behind the scenes, you get Web3-grade transparency and ownership. Advanced users can connect external Solana wallets.",
   },
   {
-    question: "Where can I spend my tokens?",
-    answer: "You can spend Lokal tokens at any participating merchant in the network. Use them for discounts, partial payments, or special offers. The more merchants join, the more places you can spend!",
+    question: "How do merchants benefit?",
+    answer: "Merchants gain AI-driven customer retention insights, smart promo recommendations, instant settlement, and access to community staking pools for liquidity. It's data, loyalty, and capital efficiency in one system.",
   },
   {
-    question: "Is there a fee for transactions?",
-    answer: "Token transactions have minimal fees (fractions of a cent) thanks to Solana's efficiency. There are no fees for earning tokens, and spending fees are covered by the merchant network.",
+    question: "What's the vision for Carsa?",
+    answer: "Every city has its own digital currency of trust and loyalty. From 'points' to 'productive assets' to 'micro-economies' — Carsa is rebuilding local capital and connection, one city at a time.",
   },
 ]
 

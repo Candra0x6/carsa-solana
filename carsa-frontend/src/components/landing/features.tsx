@@ -4,55 +4,55 @@ import { FeatureCard } from "./feature-card"
 
 const consumerFeatures = [
   {
-    title: "Mobile Wallet",
-    description: "Secure Solana wallet integrated into the app with your Lokal token balance",
-    icon: "📱",
+    title: "Productive Tokens",
+    description: "Your Lokal tokens automatically earn yield while idle — turning rewards into growing assets",
+    icon: "🪙",
   },
   {
-    title: "QR Scanner",
-    description: "Quick and easy QR code scanning to complete transactions with merchants",
-    icon: "📷",
+    title: "LocalRank Reputation",
+    description: "Build trust and creditworthiness through your loyalty activity — unlock exclusive benefits",
+    icon: "🏆",
   },
   {
-    title: "Transaction History",
-    description: "Complete history of all your earnings and spendings across merchants",
-    icon: "📊",
+    title: "Custodial Simplicity",
+    description: "Web2-like user experience with Web3-grade transparency — no crypto knowledge needed",
+    icon: "🤗",
   },
 ]
 
 const merchantFeatures = [
   {
-    title: "Merchant Dashboard",
-    description: "Simple analytics showing sales, tokens issued, and customer loyalty metrics",
-    icon: "📈",
+    title: "AI-Driven Insights",
+    description: "Get retention analytics and intelligent promo recommendations to grow your business",
+    icon: "🤖",
   },
   {
-    title: "QR Code Generator",
-    description: "Generate unique QR codes for your business to accept Lokal token payments",
-    icon: "🏪",
+    title: "QR Code Payments",
+    description: "Accept Lokal tokens instantly with simple QR scanning — no complex hardware needed",
+    icon: "📱",
   },
   {
-    title: "Instant Settlement",
-    description: "Blockchain-powered instant settlement with transparent transaction records",
-    icon: "⚡",
+    title: "Community Liquidity",
+    description: "Access to community staking pools and micro-credit opportunities",
+    icon: "💧",
   },
 ]
 
 const blockchainFeatures = [
   {
-    title: "Solana Devnet",
-    description: "Built on Solana blockchain for fast, low-cost transactions and scalability",
-    icon: "🔗",
+    title: "Fast & Low-Cost",
+    description: "Powered by Solana — transparent, instant, and fraction-of-a-cent transactions",
+    icon: "⚡",
   },
   {
-    title: "Anchor Program",
-    description: "Smart contracts handle token minting, transfers, and loyalty program logic",
-    icon: "⚙️",
+    title: "Auto-Staking Yield",
+    description: "Tokens automatically earn yield from community treasury until spent",
+    icon: "🌱",
   },
   {
-    title: "SPL Tokens",
-    description: "Lokal tokens are SPL tokens - standardized, secure, and interoperable",
-    icon: "🪙",
+    title: "Community-Owned",
+    description: "LocalRank holders can vote on treasury allocation and city development",
+    icon: "🏛️",
   },
 ]
 
@@ -62,10 +62,10 @@ export function Features() {
       <div className="mx-auto max-w-6xl px-4">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Powerful Features
+            A Living Local Economy
           </h2>
           <p className="text-white/70 text-lg max-w-2xl mx-auto">
-            Everything you need for a seamless loyalty program experience, powered by blockchain technology
+            Transform loyalty points into community-owned assets with capital efficiency and reputation-based micro-economies
           </p>
         </div>
         

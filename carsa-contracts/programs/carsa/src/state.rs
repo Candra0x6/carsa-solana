@@ -219,3 +219,132 @@ pub const TRANSFER_SEED: &[u8] = b"transfer";
 
 /// Seeds for deriving token redemption PDAs
 pub const REDEMPTION_SEED: &[u8] = b"redemption";
+
+// ============================================================================
+// Voucher Pool State Structures for Non-Custodial Staking
+// ============================================================================
+
+/// Configuration parameters for the voucher staking pool
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, Debug)]
+pub struct PoolConfig {
+    /// Minimum amount required to stake
+    pub min_stake_amount: u64,
+    
+    /// Maximum amount that can be staked per user
+    pub max_stake_per_user: u64,
+    
+    /// Whether the pool accepts new deposits
+    pub deposits_enabled: bool,
+    
+    /// Whether users can withdraw/redeem
+    pub withdrawals_enabled: bool,
+    
+    /// Annual percentage yield (in basis points, e.g., 1200 = 12%)
+    pub apy_basis_points: u16,
+}
+
+/// Main pool state account for voucher staking
+/// Tracks overall pool metrics and configuration
+#[account]
+pub struct PoolState {
+    /// The authority that can manage the pool (admin)
+    pub pool_authority: Pubkey,
+    
+    /// The delegate authority that can execute deposits on behalf of users
+    pub pool_delegate: Pubkey,
+    
+    /// The vault token account that holds staked voucher tokens
+    pub vault_ata: Pubkey,
+    
+    /// The mint address of the voucher token (LOKAL token)
+    pub voucher_mint: Pubkey,
+    
+    /// Pool configuration parameters
+    pub config: PoolConfig,
+    
+    /// Total amount of voucher tokens currently staked in the pool
+    pub total_voucher_staked: u64,
+    
+    /// Total SOL/WSOL staked (after swaps)
+    pub total_sol_staked: u64,
+    
+    /// Total yield earned (in SOL/WSOL)
+    pub total_yield_earned: u64,
+    
+    /// Number of unique stakers
+    pub total_stakers: u64,
+    
+    /// Reward index for calculating proportional yields
+    pub reward_index: u128,
+    
+    /// Timestamp when pool was created
+    pub created_at: i64,
+    
+    /// Timestamp of last yield update
+    pub last_yield_update: i64,
+    
+    /// The bump seed for this pool state PDA
+    pub bump: u8,
+    
+    /// Reserved space for future upgrades (64 bytes)
+    pub reserved: [u8; 64],
+}
+
+impl PoolState {
+    /// Calculate the space needed for this account
+    /// 8 (discriminator) + 32 (pool_authority) + 32 (pool_delegate) + 32 (vault_ata)
+    /// + 32 (voucher_mint) + (8 + 8 + 1 + 1 + 2) PoolConfig + 8 (total_voucher_staked)
+    /// + 8 (total_sol_staked) + 8 (total_yield_earned) + 8 (total_stakers)
+    /// + 16 (reward_index) + 8 (created_at) + 8 (last_yield_update) + 1 (bump) + 64 (reserved)
+    /// = 284 bytes
+    pub const LEN: usize = 8 + 32 + 32 + 32 + 32 + 20 + 8 + 8 + 8 + 8 + 16 + 8 + 8 + 1 + 64;
+}
+
+/// Individual user stake record
+/// Tracks each user's staking position and rewards
+#[account]
+pub struct UserStakeRecord {
+    /// The user who owns this stake
+    pub user: Pubkey,
+    
+    /// The pool this stake belongs to
+    pub pool: Pubkey,
+    
+    /// Amount of voucher tokens staked by this user
+    pub staked_amount: u64,
+    
+    /// User's reward index snapshot (for yield calculations)
+    pub user_reward_index: u128,
+    
+    /// Total yield claimed by this user
+    pub total_yield_claimed: u64,
+    
+    /// Timestamp when user first staked
+    pub staked_at: i64,
+    
+    /// Timestamp of last stake/unstake action
+    pub last_action_at: i64,
+    
+    /// The bump seed for this user stake record PDA
+    pub bump: u8,
+    
+    /// Reserved space for future upgrades (32 bytes)
+    pub reserved: [u8; 32],
+}
+
+impl UserStakeRecord {
+    /// Calculate the space needed for this account
+    /// 8 (discriminator) + 32 (user) + 32 (pool) + 8 (staked_amount)
+    /// + 16 (user_reward_index) + 8 (total_yield_claimed) + 8 (staked_at)
+    /// + 8 (last_action_at) + 1 (bump) + 32 (reserved) = 153 bytes
+    pub const LEN: usize = 8 + 32 + 32 + 8 + 16 + 8 + 8 + 8 + 1 + 32;
+}
+
+/// Seeds for deriving the pool state PDA
+pub const POOL_STATE_SEED: &[u8] = b"pool_state";
+
+/// Seeds for deriving the pool vault authority PDA
+pub const POOL_VAULT_AUTHORITY_SEED: &[u8] = b"pool_vault_authority";
+
+/// Seeds for deriving user stake record PDAs
+pub const USER_STAKE_SEED: &[u8] = b"user_stake";

@@ -21,16 +21,15 @@ export function Hero() {
               </div>
               
               <h1 className="text-pretty text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
-                Earn and spend{" "}
+                The Future of{" "}
                 <span className="bg-gradient-to-r from-[#7c5aff] to-[#6c47ff] bg-clip-text text-transparent">
-                  Lokal tokens
-                </span>{" "}
-                at local shops
+                  Local Economies
+                </span>
               </h1>
               
               <p className="text-lg text-white/80 leading-relaxed mb-8">
-                A mobile-first loyalty app that rewards you with Lokal tokens for supporting local merchants. 
-                Shop at coffee shops, bookstores, and restaurants - earn tokens everywhere, spend anywhere.
+                Turn everyday local purchases into productive digital assets. Earn Lokal tokens that grow in value through yield, 
+                build your LocalRank reputation, and empower your community through blockchain-powered loyalty.
               </p>
               
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">

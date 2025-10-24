@@ -18,7 +18,7 @@ import { clusterApiUrl } from '@solana/web3.js';
 
 // Import wallet adapter CSS (required for styling)
 import '@solana/wallet-adapter-react-ui/styles.css';
-
+import { Toaster } from 'react-hot-toast';
 interface WalletContextProviderProps {
   children: ReactNode;
 }
@@ -67,6 +67,8 @@ export const WalletContextProvider: FC<WalletContextProviderProps> = ({ children
     <ConnectionProvider endpoint={endpoint}>
       <WalletProvider wallets={wallets} autoConnect>
         <WalletModalProvider>
+          <Toaster   position="top-center"
+  reverseOrder={false} />
           {children}
         </WalletModalProvider>
       </WalletProvider>

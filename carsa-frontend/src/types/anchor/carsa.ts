@@ -18,6 +18,141 @@ export type Carsa = {
   ],
   "instructions": [
     {
+      "name": "depositVoucher",
+      "docs": [
+        "Deposit voucher tokens into the staking pool using delegated authority",
+        "The user must have previously approved the pool delegate",
+        "",
+        "# Arguments",
+        "* `ctx` - The instruction context containing required accounts",
+        "* `amount` - The amount of voucher tokens to stake",
+        "",
+        "# Returns",
+        "* `Result<()>` - Success or error result"
+      ],
+      "discriminator": [
+        82,
+        178,
+        83,
+        142,
+        200,
+        70,
+        4,
+        73
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "docs": [
+            "The user whose tokens are being deposited"
+          ]
+        },
+        {
+          "name": "poolDelegate",
+          "docs": [
+            "The delegate authority executing this instruction on behalf of the user",
+            "Must match the pool_delegate in pool_state"
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "poolState",
+          "docs": [
+            "The pool state account"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108,
+                  95,
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "userStakeRecord",
+          "docs": [
+            "User's stake record (created if doesn't exist)"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114,
+                  95,
+                  115,
+                  116,
+                  97,
+                  107,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "poolState"
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              }
+            ]
+          }
+        },
+        {
+          "name": "userVoucherAta",
+          "docs": [
+            "User's voucher token account (source)"
+          ],
+          "writable": true
+        },
+        {
+          "name": "poolVaultAta",
+          "docs": [
+            "Pool vault token account (destination)"
+          ],
+          "writable": true
+        },
+        {
+          "name": "systemProgram",
+          "docs": [
+            "System program for account creation"
+          ],
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "tokenProgram",
+          "docs": [
+            "Token program for SPL token operations"
+          ],
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
       "name": "initialize",
       "docs": [
         "Legacy initialize function for backwards compatibility",
@@ -153,6 +288,145 @@ export type Carsa = {
         }
       ],
       "args": []
+    },
+    {
+      "name": "initializePool",
+      "docs": [
+        "Initialize a new voucher staking pool for LOKAL tokens",
+        "Creates the pool state and configures staking parameters",
+        "",
+        "# Arguments",
+        "* `ctx` - The instruction context containing required accounts",
+        "* `config` - Pool configuration including stake limits and APY",
+        "",
+        "# Returns",
+        "* `Result<()>` - Success or error result"
+      ],
+      "discriminator": [
+        95,
+        180,
+        10,
+        172,
+        84,
+        174,
+        232,
+        40
+      ],
+      "accounts": [
+        {
+          "name": "poolAuthority",
+          "docs": [
+            "The authority that manages the pool (admin)"
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "poolDelegate",
+          "docs": [
+            "The delegate authority that can execute deposits on behalf of users"
+          ]
+        },
+        {
+          "name": "poolState",
+          "docs": [
+            "The pool state account (PDA)"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108,
+                  95,
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "vaultAta",
+          "docs": [
+            "The vault token account that will hold staked voucher tokens",
+            "Must be initialized before calling this instruction"
+          ],
+          "writable": true
+        },
+        {
+          "name": "poolVaultAuthority",
+          "docs": [
+            "The vault authority PDA (owns the vault_ata)"
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "voucherMint",
+          "docs": [
+            "The voucher token mint (LOKAL token)"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "docs": [
+            "System program for account creation"
+          ],
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "tokenProgram",
+          "docs": [
+            "Token program for SPL token operations"
+          ],
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "config",
+          "type": {
+            "defined": {
+              "name": "poolConfig"
+            }
+          }
+        }
+      ]
     },
     {
       "name": "mintLokalTokens",
@@ -449,6 +723,227 @@ export type Carsa = {
               32
             ]
           }
+        }
+      ]
+    },
+    {
+      "name": "recordYield",
+      "docs": [
+        "Record yield earned from staking activities",
+        "Called by the backend after swapping vouchers to SOL and earning yield",
+        "",
+        "# Arguments",
+        "* `ctx` - The instruction context containing required accounts",
+        "* `sol_amount` - The amount of SOL yield earned",
+        "",
+        "# Returns",
+        "* `Result<()>` - Success or error result"
+      ],
+      "discriminator": [
+        80,
+        136,
+        238,
+        204,
+        216,
+        161,
+        41,
+        88
+      ],
+      "accounts": [
+        {
+          "name": "poolDelegate",
+          "docs": [
+            "The pool delegate authority (backend service)"
+          ],
+          "signer": true
+        },
+        {
+          "name": "poolState",
+          "docs": [
+            "The pool state account"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108,
+                  95,
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "solAmount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "redeemVoucher",
+      "docs": [
+        "Redeem staked vouchers and claim earned yield",
+        "Allows users to unstake their tokens and withdraw",
+        "",
+        "# Arguments",
+        "* `ctx` - The instruction context containing required accounts",
+        "* `amount` - The amount of voucher tokens to redeem",
+        "",
+        "# Returns",
+        "* `Result<()>` - Success or error result"
+      ],
+      "discriminator": [
+        50,
+        219,
+        8,
+        127,
+        45,
+        96,
+        161,
+        92
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "docs": [
+            "The user redeeming their stake"
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "poolState",
+          "docs": [
+            "The pool state account"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108,
+                  95,
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "userStakeRecord",
+          "docs": [
+            "User's stake record"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114,
+                  95,
+                  115,
+                  116,
+                  97,
+                  107,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "poolState"
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              }
+            ]
+          }
+        },
+        {
+          "name": "userVoucherAta",
+          "docs": [
+            "User's voucher token account (destination)"
+          ],
+          "writable": true
+        },
+        {
+          "name": "poolVaultAta",
+          "docs": [
+            "Pool vault token account (source)"
+          ],
+          "writable": true
+        },
+        {
+          "name": "poolVaultAuthority",
+          "docs": [
+            "Pool vault authority PDA (signer for transfer)"
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "tokenProgram",
+          "docs": [
+            "Token program for SPL token operations"
+          ],
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
         }
       ]
     },
@@ -750,6 +1245,75 @@ export type Carsa = {
           }
         }
       ]
+    },
+    {
+      "name": "updatePoolConfig",
+      "docs": [
+        "Update pool configuration settings",
+        "Only the pool authority can perform this operation",
+        "",
+        "# Arguments",
+        "* `ctx` - The instruction context containing required accounts",
+        "* `new_config` - New pool configuration parameters",
+        "",
+        "# Returns",
+        "* `Result<()>` - Success or error result"
+      ],
+      "discriminator": [
+        68,
+        236,
+        203,
+        122,
+        179,
+        62,
+        234,
+        252
+      ],
+      "accounts": [
+        {
+          "name": "poolAuthority",
+          "docs": [
+            "The pool authority (admin)"
+          ],
+          "signer": true
+        },
+        {
+          "name": "poolState",
+          "docs": [
+            "The pool state account"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108,
+                  95,
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "newConfig",
+          "type": {
+            "defined": {
+              "name": "poolConfig"
+            }
+          }
+        }
+      ]
     }
   ],
   "accounts": [
@@ -780,6 +1344,19 @@ export type Carsa = {
       ]
     },
     {
+      "name": "poolState",
+      "discriminator": [
+        247,
+        237,
+        227,
+        245,
+        215,
+        195,
+        222,
+        70
+      ]
+    },
+    {
       "name": "purchaseTransaction",
       "discriminator": [
         25,
@@ -803,6 +1380,86 @@ export type Carsa = {
         124,
         235,
         221
+      ]
+    },
+    {
+      "name": "userStakeRecord",
+      "discriminator": [
+        2,
+        228,
+        217,
+        21,
+        212,
+        139,
+        4,
+        208
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "poolConfigUpdatedEvent",
+      "discriminator": [
+        24,
+        215,
+        34,
+        45,
+        185,
+        59,
+        102,
+        68
+      ]
+    },
+    {
+      "name": "poolInitializedEvent",
+      "discriminator": [
+        249,
+        103,
+        129,
+        77,
+        214,
+        169,
+        88,
+        24
+      ]
+    },
+    {
+      "name": "voucherDepositedEvent",
+      "discriminator": [
+        103,
+        231,
+        214,
+        11,
+        249,
+        124,
+        82,
+        77
+      ]
+    },
+    {
+      "name": "voucherRedeemedEvent",
+      "discriminator": [
+        86,
+        236,
+        24,
+        84,
+        52,
+        173,
+        157,
+        177
+      ]
+    },
+    {
+      "name": "yieldRecordedEvent",
+      "discriminator": [
+        89,
+        21,
+        255,
+        236,
+        215,
+        171,
+        225,
+        22
       ]
     }
   ],
@@ -916,6 +1573,61 @@ export type Carsa = {
       "code": 6021,
       "name": "invalidDiscountPercentage",
       "msg": "Invalid discount percentage - must be between 0 and 100"
+    },
+    {
+      "code": 6022,
+      "name": "invalidAmount",
+      "msg": "Invalid amount - must be greater than zero and within limits"
+    },
+    {
+      "code": 6023,
+      "name": "unauthorized",
+      "msg": "Unauthorized - only the pool authority can perform this action"
+    },
+    {
+      "code": 6024,
+      "name": "unauthorizedDelegate",
+      "msg": "Unauthorized delegate - only the pool delegate can perform this action"
+    },
+    {
+      "code": 6025,
+      "name": "depositsDisabled",
+      "msg": "Deposits are currently disabled for this pool"
+    },
+    {
+      "code": 6026,
+      "name": "withdrawalsDisabled",
+      "msg": "Withdrawals are currently disabled for this pool"
+    },
+    {
+      "code": 6027,
+      "name": "exceedsMaxStake",
+      "msg": "User has exceeded the maximum stake per user limit"
+    },
+    {
+      "code": 6028,
+      "name": "invalidVault",
+      "msg": "Invalid vault account"
+    },
+    {
+      "code": 6029,
+      "name": "invalidMint",
+      "msg": "Invalid mint account"
+    },
+    {
+      "code": 6030,
+      "name": "invalidOwner",
+      "msg": "Invalid owner - account owner does not match expected value"
+    },
+    {
+      "code": 6031,
+      "name": "overflow",
+      "msg": "Arithmetic overflow occurred"
+    },
+    {
+      "code": 6032,
+      "name": "divisionByZero",
+      "msg": "Division by zero attempted"
     }
   ],
   "types": [
@@ -1078,6 +1790,227 @@ export type Carsa = {
               "array": [
                 "u8",
                 32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "poolConfig",
+      "docs": [
+        "Configuration parameters for the voucher staking pool"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "minStakeAmount",
+            "docs": [
+              "Minimum amount required to stake"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "maxStakePerUser",
+            "docs": [
+              "Maximum amount that can be staked per user"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "depositsEnabled",
+            "docs": [
+              "Whether the pool accepts new deposits"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "withdrawalsEnabled",
+            "docs": [
+              "Whether users can withdraw/redeem"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "apyBasisPoints",
+            "docs": [
+              "Annual percentage yield (in basis points, e.g., 1200 = 12%)"
+            ],
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "poolConfigUpdatedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pool",
+            "type": "pubkey"
+          },
+          {
+            "name": "config",
+            "type": {
+              "defined": {
+                "name": "poolConfig"
+              }
+            }
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "poolInitializedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "poolAuthority",
+            "type": "pubkey"
+          },
+          {
+            "name": "poolDelegate",
+            "type": "pubkey"
+          },
+          {
+            "name": "vaultAta",
+            "type": "pubkey"
+          },
+          {
+            "name": "voucherMint",
+            "type": "pubkey"
+          },
+          {
+            "name": "minStakeAmount",
+            "type": "u64"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "poolState",
+      "docs": [
+        "Main pool state account for voucher staking",
+        "Tracks overall pool metrics and configuration"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "poolAuthority",
+            "docs": [
+              "The authority that can manage the pool (admin)"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "poolDelegate",
+            "docs": [
+              "The delegate authority that can execute deposits on behalf of users"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "vaultAta",
+            "docs": [
+              "The vault token account that holds staked voucher tokens"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "voucherMint",
+            "docs": [
+              "The mint address of the voucher token (LOKAL token)"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "config",
+            "docs": [
+              "Pool configuration parameters"
+            ],
+            "type": {
+              "defined": {
+                "name": "poolConfig"
+              }
+            }
+          },
+          {
+            "name": "totalVoucherStaked",
+            "docs": [
+              "Total amount of voucher tokens currently staked in the pool"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "totalSolStaked",
+            "docs": [
+              "Total SOL/WSOL staked (after swaps)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "totalYieldEarned",
+            "docs": [
+              "Total yield earned (in SOL/WSOL)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "totalStakers",
+            "docs": [
+              "Number of unique stakers"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "rewardIndex",
+            "docs": [
+              "Reward index for calculating proportional yields"
+            ],
+            "type": "u128"
+          },
+          {
+            "name": "createdAt",
+            "docs": [
+              "Timestamp when pool was created"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "lastYieldUpdate",
+            "docs": [
+              "Timestamp of last yield update"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "docs": [
+              "The bump seed for this pool state PDA"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "reserved",
+            "docs": [
+              "Reserved space for future upgrades (64 bytes)"
+            ],
+            "type": {
+              "array": [
+                "u8",
+                64
               ]
             }
           }
@@ -1269,6 +2202,178 @@ export type Carsa = {
                 16
               ]
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "userStakeRecord",
+      "docs": [
+        "Individual user stake record",
+        "Tracks each user's staking position and rewards"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "user",
+            "docs": [
+              "The user who owns this stake"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "pool",
+            "docs": [
+              "The pool this stake belongs to"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "stakedAmount",
+            "docs": [
+              "Amount of voucher tokens staked by this user"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "userRewardIndex",
+            "docs": [
+              "User's reward index snapshot (for yield calculations)"
+            ],
+            "type": "u128"
+          },
+          {
+            "name": "totalYieldClaimed",
+            "docs": [
+              "Total yield claimed by this user"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "stakedAt",
+            "docs": [
+              "Timestamp when user first staked"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "lastActionAt",
+            "docs": [
+              "Timestamp of last stake/unstake action"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "docs": [
+              "The bump seed for this user stake record PDA"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "reserved",
+            "docs": [
+              "Reserved space for future upgrades (32 bytes)"
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "voucherDepositedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "pool",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "newUserTotal",
+            "type": "u64"
+          },
+          {
+            "name": "poolTotalStaked",
+            "type": "u64"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "voucherRedeemedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "pool",
+            "type": "pubkey"
+          },
+          {
+            "name": "amountRedeemed",
+            "type": "u64"
+          },
+          {
+            "name": "yieldClaimed",
+            "type": "u64"
+          },
+          {
+            "name": "remainingStake",
+            "type": "u64"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "yieldRecordedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pool",
+            "type": "pubkey"
+          },
+          {
+            "name": "solAmount",
+            "type": "u64"
+          },
+          {
+            "name": "totalYieldEarned",
+            "type": "u64"
+          },
+          {
+            "name": "rewardIndex",
+            "type": "u128"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
           }
         ]
       }

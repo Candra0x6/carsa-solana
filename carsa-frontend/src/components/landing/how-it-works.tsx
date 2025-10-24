@@ -5,8 +5,8 @@ import { Card } from "@/components/ui/card"
 const steps = [
   {
     step: "1",
-    title: "Shop",
-    description: "Visit any participating local merchant and make your purchase as usual",
+    title: "Earn Lokal",
+    description: "Make local purchases and earn 10% cashback in Lokal tokens — supporting your community pays off",
     icon: (
       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
@@ -15,18 +15,18 @@ const steps = [
   },
   {
     step: "2",
-    title: "Scan",
-    description: "Scan the merchant's QR code with the Carsa app to complete the transaction",
+    title: "Auto-Stake & Grow",
+    description: "Your idle tokens automatically earn yield from the community treasury — dead capital becomes productive",
     icon: (
       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
       </svg>
     ),
   },
   {
     step: "3",
-    title: "Earn & Spend",
-    description: "Automatically receive Lokal tokens as cashback and spend them at any participating merchant",
+    title: "Build LocalRank",
+    description: "Your loyalty activity builds reputation and unlocks exclusive benefits, promos, and future micro-credit",
     icon: (
       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
@@ -41,10 +41,10 @@ export function HowItWorks() {
       <div className="mx-auto max-w-6xl px-4">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            How It Works
+            The Carsa Flywheel
           </h2>
           <p className="text-white/70 text-lg max-w-2xl mx-auto">
-            Getting started with Carsa is simple. Shop, scan, and start earning tokens in three easy steps.
+            A self-sustaining cycle where every purchase strengthens your local economy and your financial future
           </p>
         </div>
         

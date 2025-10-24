@@ -196,6 +196,22 @@ export class DatabaseService {
   }
 
   /**
+   * update merchant reputation points
+   */
+  async updateUserMerchantReputation( merchantId: string): Promise<void> {
+    await this.prisma.merchant.update({
+      where: {
+        id: merchantId
+      },
+      data: {
+        reputation_points: { increment: 10 }
+      }
+    });
+  }
+
+ 
+   
+  /**
    * Update merchant with on-chain verification
    */
   async updateMerchant(params: {
@@ -308,13 +324,13 @@ export class DatabaseService {
         visit_count: 1,
         total_spent: params.purchaseAmount,
         total_earned: params.tokenAmount,
-        last_visit_at: new Date()
+        last_visit_at: new Date(),
       },
       update: {
         visit_count: { increment: 1 },
         total_spent: { increment: params.purchaseAmount },
         total_earned: { increment: params.tokenAmount },
-        last_visit_at: new Date()
+        last_visit_at: new Date(),
       }
     });
 
@@ -458,6 +474,35 @@ export class DatabaseService {
     };
   }
 
+  /** Get Merchant Rank */
+
+  
+  /**
+   * Get all merchants with pagination
+   */
+  async getMerchantRank(options: {
+    page?: number;
+    limit?: number;
+  } = {}) {
+    const page = options.page || 1;
+    const limit = options.limit || 10;
+    const skip = (page - 1) * limit;
+
+    const [merchants, total] = await Promise.all([
+      this.prisma.merchant.findMany({
+        skip,
+        take: limit,
+        orderBy: { reputation_points: 'desc' }, // Rank by total earned tokens
+
+      }),
+      this.prisma.userMerchant.count()
+    ]);
+
+    return { merchants, total };
+  }
+
+
+
   /**
    * Get merchant by ID
    */
@@ -518,6 +563,7 @@ export class DatabaseService {
     });
   }
 
+  
   /**
    * Create a new user
    */

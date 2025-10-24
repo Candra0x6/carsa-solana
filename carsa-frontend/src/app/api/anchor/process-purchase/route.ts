@@ -134,7 +134,9 @@ export async function POST(request: NextRequest): Promise<NextResponse<ProcessPu
 
       // Update idempotency record as completed
       await dbService.completeIdempotencyKey(idempotencyKey, body.txSignature, result.id);
-
+      // Update user reputation based on purchase
+      await dbService.updateUserMerchantReputation(body.merchantId);
+      
       return NextResponse.json({
         success: true,
         data: {

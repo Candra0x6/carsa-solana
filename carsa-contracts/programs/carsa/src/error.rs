@@ -68,4 +68,38 @@ pub enum CarsaError {
     
     #[msg("Invalid discount percentage - must be between 0 and 100")]
     InvalidDiscountPercentage,
+    
+    // Voucher Pool Errors
+    #[msg("Invalid amount - must be greater than zero and within limits")]
+    InvalidAmount,
+    
+    #[msg("Unauthorized - only the pool authority can perform this action")]
+    Unauthorized,
+    
+    #[msg("Unauthorized delegate - only the pool delegate can perform this action")]
+    UnauthorizedDelegate,
+    
+    #[msg("Deposits are currently disabled for this pool")]
+    DepositsDisabled,
+    
+    #[msg("Withdrawals are currently disabled for this pool")]
+    WithdrawalsDisabled,
+    
+    #[msg("User has exceeded the maximum stake per user limit")]
+    ExceedsMaxStake,
+    
+    #[msg("Invalid vault account")]
+    InvalidVault,
+    
+    #[msg("Invalid mint account")]
+    InvalidMint,
+    
+    #[msg("Invalid owner - account owner does not match expected value")]
+    InvalidOwner,
+    
+    #[msg("Arithmetic overflow occurred")]
+    Overflow,
+    
+    #[msg("Division by zero attempted")]
+    DivisionByZero,
 }

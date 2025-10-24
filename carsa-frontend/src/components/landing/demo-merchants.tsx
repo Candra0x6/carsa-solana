@@ -6,23 +6,23 @@ const merchants = [
   {
     name: "Kopi Lokal",
     type: "Coffee Shop",
-    description: "Premium local coffee with artisanal roasts. Earn 5% back in Lokal tokens on every purchase.",
+    description: "Get 10% Lokal cashback on every coffee. Your tokens earn yield while you savor your next cup.",
     logo: "☕",
-    testimonial: "Our customers love earning Lokal tokens. It's increased our repeat business by 40%!",
+    testimonial: "Carsa transformed our loyalty program. Customers come back more — and the AI insights help us optimize promos.",
   },
   {
     name: "Kota Bookstore",
     type: "Bookstore",
-    description: "Independent bookstore featuring local authors and international titles. Get 3% cashback in tokens.",
+    description: "Accept Lokal for partial payment and reward frequent readers with LocalRank-exclusive discounts.",
     logo: "📚",
-    testimonial: "Carsa helps us compete with big chains while supporting our local community.",
+    testimonial: "The data on customer retention is incredible. We finally understand our community better than ever.",
   },
   {
     name: "Warung Nusantara",
     type: "Restaurant",
-    description: "Authentic Indonesian cuisine made with locally-sourced ingredients. Earn 4% Lokal tokens back.",
+    description: "Boost slow hours with LocalRank-exclusive promos. Your regulars build reputation while you build revenue.",
     logo: "🍜",
-    testimonial: "The QR code system is so simple. Our customers and staff both love it!",
+    testimonial: "Simple QR payments plus smart analytics. Carsa is exactly what local businesses needed.",
   },
 ]
 
@@ -32,10 +32,10 @@ export function DemoMerchants() {
       <div className="mx-auto max-w-6xl px-4">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Demo Merchants
+            The Carsa Flywheel in Action
           </h2>
           <p className="text-white/70 text-lg max-w-2xl mx-auto">
-            Experience the Carsa ecosystem with our partner merchants across the city
+            See how local businesses and customers create a living, data-driven economy together
           </p>
         </div>
         

@@ -155,7 +155,7 @@ export default function PurchaseTransaction({
       });
 
       // Record the transaction in the database
-      const apiResponse = await fetch('/api/anchor/process-purchase', {
+      const apiResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/anchor/process-purchase`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

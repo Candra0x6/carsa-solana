@@ -18,7 +18,7 @@ export function Footer() {
                 <span className="text-white font-semibold">Carsa</span>
               </div>
               <p className="text-white/70 text-sm">
-                Hyperlocal community currency & loyalty program powered by Solana blockchain.
+                Building the future of local commerce — where every purchase earns productive tokens, grows through yield, and empowers communities.
               </p>
             </div>
 

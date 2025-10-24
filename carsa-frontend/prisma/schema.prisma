@@ -97,6 +97,9 @@ model Merchant {
   // Timestamps
   created_at            DateTime  @default(now())
   updated_at            DateTime  @updatedAt
+
+// Reputation Point
+  reputation_points     Int       @default(0) // Cumulative points for loyalty
   
   // Relations
   transactions          Transaction[]
@@ -164,6 +167,7 @@ model UserMerchant {
   visit_count           Int       @default(0)
   total_spent           Decimal   @default(0) @db.Decimal(18, 9)
   total_earned          Decimal   @default(0) @db.Decimal(18, 9)
+  
   
   // Timestamps
   first_visit_at        DateTime  @default(now())
