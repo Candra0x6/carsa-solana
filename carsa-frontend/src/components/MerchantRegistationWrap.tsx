@@ -26,11 +26,9 @@ const MerchantRegistrationWrap: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 ">
-      <div className="max-w-2xl mx-auto">
-  <h1 className="text-pretty text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
-                Register Your Merchant
-              </h1>
+    <div className="min-h-screen ">
+      <div className="max-w-5xl mx-auto">
+  
     {/* Instructions */}
     <div className="space-y-6">
       {/* Main Registration Form - Takes 2 columns */}
