@@ -8,12 +8,6 @@ import { Merchant, User, UserMerchant } from '@/generated/prisma';
 import Image from 'next/image';
 
 
-const dummyData: Merchant[] = [
-  { id: '1', name: 'Gourmet Bites', category: 'FOOD_BEVERAGE', city: 'New York', cashback_rate: 750 },
-  { id: '2', name: 'Tech Haven', category: 'RETAIL', city: 'San Francisco', cashback_rate: 650 },
-  { id: '3', name: 'Style Studio', category: 'HEALTH_BEAUTY', city: 'Los Angeles', cashback_rate: 600 },
-];
-
 const CATEGORY_ICONS: Record<string, string> = {
   'FOOD_BEVERAGE': '🍽️',
   'RETAIL': '🛍️',
