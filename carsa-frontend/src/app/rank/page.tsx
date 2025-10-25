@@ -5,7 +5,14 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Merchant, User, UserMerchant } from '@/generated/prisma';
+import Image from 'next/image';
 
+
+const dummyData: Merchant[] = [
+  { id: '1', name: 'Gourmet Bites', category: 'FOOD_BEVERAGE', city: 'New York', cashback_rate: 750 },
+  { id: '2', name: 'Tech Haven', category: 'RETAIL', city: 'San Francisco', cashback_rate: 650 },
+  { id: '3', name: 'Style Studio', category: 'HEALTH_BEAUTY', city: 'Los Angeles', cashback_rate: 600 },
+];
 
 const CATEGORY_ICONS: Record<string, string> = {
   'FOOD_BEVERAGE': '🍽️',
@@ -102,83 +109,61 @@ const MerchantRankPage: React.FC = () => {
     );
   }
 
-  const topThree = merchants.slice(0, 3);
+  const topThree = merchants.slice(0, 2);
   const restOfTop10 = merchants.slice(3);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-black">
       <div className="max-w-7xl pt-20 mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-[#7c5aff] to-[#6c47ff] rounded-2xl mb-4">
-            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <h1 className="text-4xl font-bold text-white mb-3">Merchant Rankings</h1>
-          <p className="text-white/70 text-lg">Top performing merchants on the Lokal platform</p>
+                 <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-white mb-4">
+            Merchants <span className="bg-gradient-to-r from-[#7c5aff] to-[#6c47ff] bg-clip-text text-transparent">Rank</span>
+          </h1>
+          <p className="text-gray-300 text-lg max-w-2xl mx-auto leading-relaxed">
+            Check out the top merchants in our network and see how they rank!
+          </p>
         </div>
-
         {/* Top 3 Podium */}
-        {topThree.length >= 3 ? (
+      
           <div className="mb-16">
             {/* Podium Container with proper spacing */}
             <div className="relative max-w-6xl mx-auto px-4">
+              
               {/* Desktop Podium Layout */}
-              <div className="hidden md:grid md:grid-cols-3 gap-8 items-end">
+              <div className=" relative flex flex-col items-center gap-8 ">
+                <div className="grid grid-cols-3 sm:gap-[10vw] lg:gap-20 gap-2 -mb-24">
+
                 {/* 2nd Place - Left (Lower) */}
-                <div className="mt-24">
-                  <TopMerchantCard merchant={topThree[1]} position={2} />
+                <div className="mt-24 z-10">
+                  {topThree[1] && <TopMerchantCard merchant={topThree[1]} position={2} />}
                 </div>
 
                 {/* 1st Place - Center (Highest) */}
-                <div className="relative">
-                  <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-10">
-                    <div className="w-20 h-20 bg-gradient-to-br from-yellow-400 via-yellow-300 to-yellow-500 rounded-full flex items-center justify-center shadow-2xl shadow-yellow-500/50 border-4 border-[#0a0a0b] animate-pulse">
-                      <span className="text-4xl">👑</span>
-                    </div>
-                  </div>
+                <div className="relative z-10">
+                 
                   <TopMerchantCard merchant={topThree[0]} position={1} />
                 </div>
 
                 {/* 3rd Place - Right (Lower) */}
-                <div className="mt-24">
-                  <TopMerchantCard merchant={topThree[2]} position={3} />
+                <div className="mt-24 z-10">
+                  {topThree[2] && <TopMerchantCard merchant={topThree[2]} position={3} className='sm:ml-5 sm:translate-y-15' />}
                 </div>
+                </div>
+
+              <Image src="/podium.png" alt="Podium" width={600} height={200} className="w-full max-w-4xl mx-auto opacity-40 " />
+               <div
+    className="absolute inset-0  bg-gradient-to-t from-black via-transparent to-transparent z-0"
+   
+  ></div>
+
               </div>
 
               {/* Mobile Podium Layout */}
-              <div className="md:hidden space-y-6">
-                {/* 1st Place */}
-                <div className="relative">
-                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 z-10">
-                    <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 via-yellow-300 to-yellow-500 rounded-full flex items-center justify-center shadow-2xl shadow-yellow-500/50 border-4 border-[#0a0a0b] animate-pulse">
-                      <span className="text-3xl">👑</span>
-                    </div>
-                  </div>
-                  <div className="pt-8">
-                    <TopMerchantCard merchant={topThree[0]} position={1} />
-                  </div>
-                </div>
-
-                {/* 2nd Place */}
-                <TopMerchantCard merchant={topThree[1]} position={2} />
-
-                {/* 3rd Place */}
-                <TopMerchantCard merchant={topThree[2]} position={3} />
-              </div>
+             
             </div>
           </div>
-        ) : (
-          <div className="max-w-4xl mx-auto px-4">
-            <h2 className="text-2xl font-bold text-white mb-6">Top Merchants</h2>
-            <div className="space-y-4">
-              {topThree.map((merchant, index) => (
-                <TopMerchantCard key={merchant.id} merchant={merchant} position={index + 1 as 1 | 2 | 3} />
-              ))}
-            </div>
-          </div>
-        )}
+       
 
         {/* Ranks 4-10 */}
         {restOfTop10.length > 0 && (
@@ -212,50 +197,26 @@ const MerchantRankPage: React.FC = () => {
 };
 
 // Top 3 Merchant Card Component
-const TopMerchantCard: React.FC<{ merchant: Merchant; position: 1 | 2 | 3 }> = ({ merchant, position }) => {
+const TopMerchantCard: React.FC<{ merchant: Merchant; position: 1 | 2 | 3; className?: string }> = ({ merchant, position, className }) => {
   const colors = MEDAL_COLORS[position];
 
   return (
     <Link href={`/merchants/${merchant.id}`}>
       <Card 
         variant="surface" 
-        className={`overflow-hidden transition-all duration-300 hover:scale-105 cursor-pointer ${colors.glow} ${colors.border} border-2`}
+        className={`w-[10wh] h-[10wh] md:w-40  md:h-40 ${className}`}
       >
-        {/* Rank Badge */}
-        <div className="relative">
-          <div className={`absolute -top-3 left-1/2 -translate-x-1/2 z-10 w-14 h-14 rounded-full bg-gradient-to-br ${colors.gradient} flex items-center justify-center text-2xl shadow-lg border-4 border-[#131316]`}>
-            {colors.icon}
-          </div>
-          <div className={`h-24 bg-gradient-to-br ${colors.bg} border-b border-white/10 pt-8`}>
-            <div className="text-center mt-6">
-              <div className={`text-5xl font-bold bg-gradient-to-br ${colors.gradient} bg-clip-text text-transparent`}>
-                #{position}
-              </div>
-            </div>
-          </div>
-        </div>
-
+      
         {/* Merchant Info */}
         <div className="p-6 text-center">
-          <div className="w-16 h-16 mx-auto mb-4 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/20">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center backdrop-blur-sm border ">
             <span className="text-3xl">{CATEGORY_ICONS[merchant.category] || '🏪'}</span>
           </div>
 
           <h3 className="text-xl font-bold text-white mb-2 truncate">{merchant.name}</h3>
-          <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white/10 border border-white/20 text-white/90 mb-3">
-            {merchant.category.replace('_', ' & ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
-          </div>
+      
 
-          <div className={`mt-4 p-4 rounded-xl bg-gradient-to-br ${colors.bg} border ${colors.border}`}>
-            <div className="text-2xl font-bold text-white mb-1">
-              {(merchant.cashback_rate / 100).toFixed(1)}%
-            </div>
-            <div className="text-sm text-white/70">Cashback Rate</div>
-          </div>
-
-          <div className="mt-4 text-sm text-white/60">
-            📍 {merchant.city}
-          </div>
+        
         </div>
       </Card>
     </Link>
