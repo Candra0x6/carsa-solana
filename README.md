@@ -1,42 +1,60 @@
-# 🚀 CARSA - Hyperlocal Community Currency & Loyalty Program
+# 🚀 Carsa — The Future of Local Economies
 
 [![Solana](https://img.shields.io/badge/Built%20on-Solana-9945FF?style=for-the-badge&logo=solana)](https://solana.com/)
 [![Anchor](https://img.shields.io/badge/Framework-Anchor-512BD4?style=for-the-badge)](https://www.anchor-lang.com/)
 [![Next.js](https://img.shields.io/badge/Frontend-Next.js-000000?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/Language-TypeScript-3178C6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
 
-A mobile-first loyalty & rewards application powered by blockchain technology where users earn **Lokal tokens** when shopping at local MSMEs (Micro, Small & Medium Enterprises) and can spend them across a city-wide coalition of merchants on the Solana blockchain.
+### 🪙 Hyperlocal Community Currency for Small Businesses  
+**Carsa** empowers MSMEs (micro, small, and medium enterprises) with a **blockchain-based loyalty and rewards ecosystem** — turning everyday purchases into **productive local capital**.  
 
-## 📱 What is CARSA?
+## 💡 Overview
 
-CARSA is a revolutionary hyperlocal community currency system that bridges the gap between local merchants and customers through blockchain technology. By leveraging Solana's fast and cost-effective network, CARSA enables:
+**Carsa** bridges the gap between **local commerce** and **Web3 finance**.  
+When customers shop locally, they earn **Lokal Tokens** — but instead of sitting idle like traditional points, these tokens:  
+- ✅ Earn yield while unspent  
+- ✅ Build a **LocalRank** reputation score  
+- ✅ Unlock community-driven **micro-credits** for loyal users and merchants  
 
-- **Customers** to earn Lokal tokens as cashback rewards from local merchants
-- **Merchants** to participate in a city-wide loyalty coalition with customizable reward rates
-- **Communities** to strengthen local economies through increased circulation of value
+Carsa transforms loyalty into a **self-sustaining, decentralized local economy**.  
 
-## 🌟 Key Features
 
-### For Customers 👥
-- 📱 **Mobile-First Experience**: Seamless wallet integration with QR code scanning
-- 🪙 **Earn Lokal Tokens**: Get cashback rewards (up to 50%) on every purchase
-- 💸 **Flexible Spending**: Use tokens to pay at any participating merchant
-- 📊 **Transaction History**: Complete audit trail of earnings and spendings
-- ⚡ **Instant Transactions**: Powered by Solana's sub-second confirmation times
+## 🚀 Key Features  
 
-### For Merchants 🏪
-- 📈 **Merchant Dashboard**: Analytics for sales, customer engagement, and loyalty metrics
-- 🔧 **Customizable Rewards**: Set cashback rates (0-50%) based on business strategy
-- 🏪 **QR Code Generation**: Easy-to-use payment acceptance system
-- ⚡ **Instant Settlement**: Real-time transaction settlement with transparent records
-- 🤝 **Coalition Benefits**: Access to shared customer base across the network
+| Feature | Description | Why It’s Powerful |
+|----------|--------------|------------------|
+| 🛍️ **Lokal Tokens** | Earn tokens for shopping locally | Creates a real sense of community ownership |
+| 💰 **Auto-Yield Staking** | Unspent tokens generate yield in a Solana pool | Turns idle rewards into productive assets |
+| 🧠 **LocalRank Reputation** | Users earn rank for consistent local activity | Gamifies loyalty and builds decentralized trust |
+| 💳 **Micro-Credits (Future)** | Borrow small “Lokal advances” via reputation | Enables community-powered credit |
+| 📊 **Merchant Dashboard** | Merchants track spend, redemption, and loyalty ROI | Converts data → insights for MSMEs |
 
-### Blockchain Infrastructure 🔗
-- 🚀 **Solana Network**: Fast, low-cost transactions with high throughput
-- ⚙️ **Anchor Framework**: Secure smart contracts handling all loyalty logic
-- 🪙 **SPL Token Standard**: Lokal tokens built on proven Solana token standards
-- 🔐 **On-Chain First**: All operations verified on blockchain before database updates
+---
 
+## 🧩 Problem & Why It Matters  
+Small businesses struggle with:  
+- ❌ Low customer retention  
+- ❌ Inefficient, siloed loyalty systems  
+- ❌ Lack of digital tools for tracking and rewards  
+
+**Carsa fixes this** by providing:  
+✅ Transparent, interoperable rewards via blockchain  
+✅ Shared ecosystem where multiple merchants benefit  
+✅ Productive capital that circulates locally  
+
+---
+
+## 🧠 (Hackathon MVP)  
+
+1. **Earn** Lokal tokens after purchasing from a local store  
+2. **Spend** them at any other participating merchant  
+3. **Track** earnings & spending via merchant dashboard  
+4. **Stake** idle tokens for yield (optional in MVP)  
+5. **Monitor** community stats (leaderboard, LocalRank)  
+
+🔗 *All transactions are recorded transparently on Solana.*  
+
+---
 ## 🏗️ Project Architecture
 
 ```
@@ -253,26 +271,24 @@ npm run test:integration
 ./setup.sh --network mainnet
 ```
 
-## 📈 Roadmap
+## 🧭 Roadmap  
 
-### Phase 1: Core Infrastructure ✅
-- [x] Smart contract development
-- [x] Token implementation  
-- [x] Basic frontend interface
-- [x] Database integration
+| Stage | Features | Goal |
+|--------|-----------|------|
+| **MVP (Hackathon)** | Earn & Spend flow, merchant dashboard | Functional demo |
+| **V2** | Auto-yield staking | Productive rewards |
+| **V3** | LocalRank & micro-credits | Social + financial trust |
+| **V4** | Multi-city expansion | Scalable ecosystem |
 
-### Phase 2: Enhanced Features 🚧
-- [ ] Mobile app development
-- [ ] QR code payment system
-- [ ] Advanced analytics dashboard
-- [ ] Multi-merchant coalition tools
+---
 
-### Phase 3: Scale & Expansion 📅
-- [ ] Multi-city deployment
-- [ ] Advanced loyalty mechanics
-- [ ] B2B merchant tools
-- [ ] Integration APIs for third parties
+## 👥 Team  
 
+| Role | Name | Focus |
+|------|------|--------|
+| Founder | Candra | Vision & strategy & Dev |
+
+---
 ## 🤝 Contributing
 
 We welcome contributions! Please see our [Contributing Guide](./CONTRIBUTING.md) for details.
@@ -287,12 +303,6 @@ We welcome contributions! Please see our [Contributing Guide](./CONTRIBUTING.md)
 
 This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
 
-## 🆘 Support
-
-- 📧 **Email**: support@carsa.app
-- 💬 **Discord**: [Join our community](https://discord.gg/carsa)
-- 🐛 **Issues**: [GitHub Issues](https://github.com/yourusername/carsa-solana/issues)
-- 📖 **Docs**: [Documentation Portal](https://docs.carsa.app)
 
 ## 🙏 Acknowledgments
 
@@ -307,6 +317,5 @@ This project is licensed under the MIT License - see the [LICENSE](./LICENSE) fi
 
 **Built with ❤️ for local communities worldwide**
 
-[Website](https://carsa.app) • [Documentation](https://docs.carsa.app) • [Community](https://discord.gg/carsa)
-
+[Website](https://carsa.vercel.app/)
 </div>
